@@ -6,6 +6,8 @@ dotenv.config()
 
 const { API_HOST } = process.env
 
+const routes = require('./Routes/index')
+
 const init = async () => {
     // Create a new Hapi server instance
     const server = Hapi.server({
@@ -21,6 +23,8 @@ const init = async () => {
             return 'GN Backed is working good';
         }
     });
+    
+    server.route(routes)
 
     // Start the server
     await server.start();
