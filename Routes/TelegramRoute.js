@@ -1,4 +1,4 @@
-const { getMe, postMessage, getUpdates } = require('../Services/TelegramService')
+const { getMe, postMessage, getUpdates, getChatInfo, getMemberInfoFromChat, createPull, sendDice } = require('../Services/TelegramService')
 
 module.exports = [
     {
@@ -7,8 +7,13 @@ module.exports = [
         handler: (req,h) => {
             console.log('test')
             // getMe()
-            getUpdates()
+            // getUpdates()
             // postMessage()
+            // getChatInfo()
+            // getMemberInfoFromChat()
+            // createPull()
+            // sendDice()
+
             return { data: true }
         },
         options: {

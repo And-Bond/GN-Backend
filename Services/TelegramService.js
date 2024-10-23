@@ -14,6 +14,7 @@ const getMe = async () => {
 const getUpdates = async () => {
     let res = await axios.get(path + '/getUpdates')
     console.log('%O',JSON.stringify(res.data))
+    console.log('%O',res.data)
 }
 
 const postMessage = async (message) => {
@@ -21,11 +22,46 @@ const postMessage = async (message) => {
         chat_id: 1688733747,
         text : 'TEST'
     })
-    console.log(res)
+    console.log(res.data)
+}
+
+const getChatInfo = async (chatId) => {
+    let res = await axios.get(path + `/getChat?chat_id=1688733747`)
+    console.log(res.data)
+}
+
+const getMemberInfoFromChat = async (chatId,userId) => {
+    let res = await axios.get(path + '/getChatMember?chat_id=-1002344597295&user_id=1688733747')
+    console.log(res.data)
+}
+
+const createPull = async (chatId) => {
+    let res = await axios.post(path + '/sendPoll', {
+        chat_id: -1002344597295,
+        question: 'Test pull here',
+        options: [
+            'First',
+            'Second',
+            'Third',
+            'Fourth'
+        ],
+        is_anonymous: false
+    })
+    console.log(res.data)
+}
+
+const sendDice = async (chatId) => {
+    let res = await axios.post(path + '/sendDice', {
+        chat_id: -1002344597295
+    })
 }
 
 module.exports = {
     getMe,
     postMessage,
-    getUpdates
+    getUpdates,
+    getChatInfo,
+    getMemberInfoFromChat,
+    createPull,
+    sendDice
 }
