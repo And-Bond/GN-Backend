@@ -17,21 +17,33 @@ const getUpdates = async () => {
     console.log('%O',res.data)
 }
 
-const postMessage = async (message) => {
+const sendMessage = async (chatId, message) => {
     let res = await axios.post(path + '/sendMessage', {
-        chat_id: 1688733747,
-        text : 'TEST'
+        chat_id: chatId,
+        text : message
     })
     console.log(res.data)
 }
+const sendMenuButtons = async (chatId, message, buttons) => {
+    const res = await axios.post(`${path}/sendMessage`, {
+        chat_id: chatId,
+        text: message,
+        reply_markup: {
+            keyboard: buttons.map(row => row.map(text => ({ text }))),
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    });
+    console.log('Menu sent:', res.data);
+};
 
 const getChatInfo = async (chatId) => {
-    let res = await axios.get(path + `/getChat?chat_id=1688733747`)
+    let res = await axios.get(path + `/getChat?chat_id=${chatId}`)
     console.log(res.data)
 }
 
-const getMemberInfoFromChat = async (chatId,userId) => {
-    let res = await axios.get(path + '/getChatMember?chat_id=-1002344597295&user_id=1688733747')
+const getMemberInfoFromChat = async (chatId, userId) => {
+    let res = await axios.get(path + `/getChatMember?chat_id=-${chatId}&user_id=${userId}`)
     console.log(res.data)
 }
 
@@ -47,7 +59,6 @@ const createPull = async (chatId) => {
         ],
         is_anonymous: false
     })
-    console.log(res.data)
 }
 
 const sendDice = async (chatId) => {
@@ -56,12 +67,28 @@ const sendDice = async (chatId) => {
     })
 }
 
+const setWebhook = async (path) => {
+    let url = encodeURI(path)
+    let res = await axios.post(path + '/setWebhook?url='+url)
+    console.log(res.data)
+    return;
+}
+
+const getWebhookInfo = async () => {
+    let res = await axios.post(path + '/getWebhookInfo')
+    console.log(res.data)
+    return;
+}
+
 module.exports = {
     getMe,
-    postMessage,
+    sendMessage,
     getUpdates,
     getChatInfo,
     getMemberInfoFromChat,
     createPull,
-    sendDice
+    sendDice,
+    setWebhook,
+    getWebhookInfo,
+    sendMenuButtons
 }

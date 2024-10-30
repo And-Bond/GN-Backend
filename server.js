@@ -4,7 +4,7 @@ const Hapi = require('@hapi/hapi');
 const dotenv = require('dotenv');
 dotenv.config()
 
-const { API_HOST } = process.env
+const { API_HOST, API_PATH } = process.env
 
 const routes = require('./Routes/index')
 
@@ -12,7 +12,7 @@ const init = async () => {
     // Create a new Hapi server instance
     const server = Hapi.server({
         port: API_HOST,        // Set the port
-        host: 'localhost', // Set the host
+        host: API_PATH, // Set the host
     });
 
     // Basic route: Responds with "Hello, Hapi!" when accessed via GET
