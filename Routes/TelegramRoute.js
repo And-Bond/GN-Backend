@@ -1,5 +1,8 @@
 const TelegramService = require('../Services/TelegramService')
 const TelegramUserService = require('../Services/TelegramUserService')
+const PlanningCenterService = require('../Services/PlanningCenterService')
+
+const SundayServiceId = '1410194'
 
 module.exports = [
     {
@@ -9,8 +12,8 @@ module.exports = [
             try {
                 console.log('test')
                 let res;
-                res = await TelegramService.getChatInfo(1688733747)
-                res = await TelegramService.sendMessage(1688733747,'Yo')
+                // res = await TelegramService.getChatInfo(1688733747)
+                // res = await TelegramService.sendMessage(1688733747,'Yo')
                 // TelegramService.getMe()
                 // res = await TelegramService.getUpdates()
                 // TelegramService.postMessage()
@@ -22,6 +25,16 @@ module.exports = [
                 // res = await TelegramService.setWebhook('https://e6e6-212-55-90-219.ngrok-free.app/telegram')
                 // res = await TelegramService.getWebhookInfo()
                 // res = await TelegramService.deleteWebhook()
+
+                // Part with songs
+                // res = await PlanningCenterService.getPlansList(SundayServiceId)
+                // let nextSundayPlan = res.data?.data?.[0]
+                // res = await PlanningCenterService.getPlanItems(SundayServiceId,nextSundayPlan?.id)
+                // let allSongs = res.data.data.filter(item => item.attributes.item_type === 'song')
+                // let testArrangmentId = allSongs[2]?.relationships?.arrangement?.data?.id
+                // let testSongId = allSongs[2]?.relationships?.song?.data?.id
+                // res = await PlanningCenterService.getAttachmentsBySongArrangement(testSongId,testArrangmentId)
+                //  ////////////////////////////
                 return { data: res.data }
             } catch (error) {
                 console.log('ROUTE ERROR:',error)
