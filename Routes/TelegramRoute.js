@@ -1,4 +1,5 @@
 const TelegramService = require('../Services/TelegramService')
+const TelegramUserService = require('../Services/TelegramUserService')
 
 module.exports = [
     {
@@ -7,17 +8,21 @@ module.exports = [
         handler: async(req,h) => {
             try {
                 console.log('test')
+                let res;
+                res = await TelegramService.getChatInfo(1688733747)
+                res = await TelegramService.sendMessage(1688733747,'Yo')
                 // TelegramService.getMe()
-                // TelegramService.getUpdates()
+                // res = await TelegramService.getUpdates()
                 // TelegramService.postMessage()
                 // TelegramService.getChatInfo()
                 // TelegramService.getMemberInfoFromChat()  
                 // TelegramService.createPull()
                 // TelegramService.sendDice()
-                // TelegramService.setWebhook('')
-                await TelegramService.setWebhook('https://7a53-37-139-172-145.ngrok-free.app/telegram')
-                await TelegramService.getWebhookInfo()
-                return { data: true }
+                // await TelegramService.setWebhook('')
+                // res = await TelegramService.setWebhook('https://e6e6-212-55-90-219.ngrok-free.app/telegram')
+                // res = await TelegramService.getWebhookInfo()
+                // res = await TelegramService.deleteWebhook()
+                return { data: res.data }
             } catch (error) {
                 console.log('ROUTE ERROR:',error)
                 return { data: false }
@@ -30,29 +35,40 @@ module.exports = [
     },
     {
         method: 'POST',
-        path: '/setWebhook',
-        handler: (req,h) => {
-            console.log('webhook')
-            // TelegramService.setWebhook('https://c5df-37-139-172-145.ngrok-free.app')
-
-            return { data: true }
-        },
-        options: {
-
-        }
-    },
-    {
-        method: 'POST',
         path: '/telegram',
         handler: async(req,h) => {
             // console.log('Incoming Message Req',req)
             let { payload } = req
+            // IS bot blocked
+            if(payload.my_chat_member){
+                if(
+                    payload.my_chat_member.new_chat_member.user.username === 'gn_church_bot' &&
+                    payload.my_chat_member.new_chat_member.status === 'kicked'
+                ){
+                    await TelegramUserService.updateOne( { userId: payload.my_chat_member.chat.id }, { active: false } )
+                }
+                return { data: false }
+            }
+            // Other text functional
             let { 
                 text: commandText,
                 date: updatedAt,
                 chat: chat,
                 from: user  
              }= payload.message
+
+             let account = await TelegramUserService.getOne({ userId: user.id })
+             let res = await TelegramService.getChatInfo(user.id)
+             if(!account){
+                let userData = {
+                    userId: user.id,
+                    active: true,
+                    lastMessageAt: new Date(updatedAt)
+                }
+                account = await TelegramUserService.create(userData)
+             }else{
+                await TelegramUserService.updateOne({ _id: account._id }, { lastMessageAt: updatedAt, active: true })
+             }
 
              switch(commandText){
                 case '/test': {
@@ -68,7 +84,6 @@ module.exports = [
                     return { data: false }
                 }
              }
-            // TelegramService.setWebhook('https://c5df-37-139-172-145.ngrok-free.app')
         },
         options: {
 

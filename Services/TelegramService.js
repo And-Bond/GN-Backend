@@ -4,28 +4,24 @@ dotenv.config()
 
 const { TELEGRAM_KEY } = process.env
 
-const path = 'https://api.telegram.org/bot' + TELEGRAM_KEY
+const telegramPath = 'https://api.telegram.org/bot' + TELEGRAM_KEY
 
 const getMe = async () => {
-    let res = await axios.get(path + '/getMe')
-    console.log(res.data)
+    return axios.get(telegramPath + '/getMe')
 }
 
 const getUpdates = async () => {
-    let res = await axios.get(path + '/getUpdates')
-    console.log('%O',JSON.stringify(res.data))
-    console.log('%O',res.data)
+    return axios.get(telegramPath + '/getUpdates')
 }
 
 const sendMessage = async (chatId, message) => {
-    let res = await axios.post(path + '/sendMessage', {
+    return axios.post(telegramPath + '/sendMessage', {
         chat_id: chatId,
         text : message
     })
-    console.log(res.data)
 }
 const sendMenuButtons = async (chatId, message, buttons) => {
-    const res = await axios.post(`${path}/sendMessage`, {
+    return axios.post(`${telegramPath}/sendMessage`, {
         chat_id: chatId,
         text: message,
         reply_markup: {
@@ -34,50 +30,44 @@ const sendMenuButtons = async (chatId, message, buttons) => {
             one_time_keyboard: true
         }
     });
-    console.log('Menu sent:', res.data);
 };
 
 const getChatInfo = async (chatId) => {
-    let res = await axios.get(path + `/getChat?chat_id=${chatId}`)
-    console.log(res.data)
+    return axios.get(telegramPath + `/getChat?chat_id=${chatId}`)
 }
 
 const getMemberInfoFromChat = async (chatId, userId) => {
-    let res = await axios.get(path + `/getChatMember?chat_id=-${chatId}&user_id=${userId}`)
-    console.log(res.data)
+    return axios.get(telegramPath + `/getChatMember?chat_id=-${chatId}&user_id=${userId}`)
 }
 
-const createPull = async (chatId) => {
-    let res = await axios.post(path + '/sendPoll', {
-        chat_id: -1002344597295,
-        question: 'Test pull here',
-        options: [
-            'First',
-            'Second',
-            'Third',
-            'Fourth'
-        ],
-        is_anonymous: false
+const createPull = async (chatId, question, options, isAnonymous) => {
+    return axios.post(telegramPath + '/sendPoll', {
+        chat_id: chatId,
+        question: question,
+        options: options,
+        is_anonymous: isAnonymous
     })
 }
 
 const sendDice = async (chatId) => {
-    let res = await axios.post(path + '/sendDice', {
-        chat_id: -1002344597295
+    return axios.post(telegramPath + '/sendDice', {
+        chat_id: chatId
     })
 }
 
 const setWebhook = async (path) => {
     let url = encodeURI(path)
-    let res = await axios.post(path + '/setWebhook?url='+url)
-    console.log(res.data)
-    return;
+    return axios.post(telegramPath + '/setWebhook',{
+        url: url
+    })
 }
 
 const getWebhookInfo = async () => {
-    let res = await axios.post(path + '/getWebhookInfo')
-    console.log(res.data)
-    return;
+    return axios.post(telegramPath + '/getWebhookInfo')
+}
+
+const deleteWebhook = async () => {
+    return axios.post(telegramPath + '/deleteWebhook')
 }
 
 module.exports = {
@@ -90,5 +80,6 @@ module.exports = {
     sendDice,
     setWebhook,
     getWebhookInfo,
-    sendMenuButtons
+    sendMenuButtons,
+    deleteWebhook
 }
