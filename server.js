@@ -2,9 +2,10 @@
 
 const Hapi = require('@hapi/hapi');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose')
 dotenv.config()
 
-const { API_HOST, API_PATH } = process.env
+const { API_HOST, API_PATH, MONGODB_PATH } = process.env
 
 const routes = require('./Routes/index')
 
@@ -29,6 +30,8 @@ const init = async () => {
     // Start the server
     await server.start();
     console.log('Server running on %s', server.info.uri);
+    await mongoose.connect(MONGODB_PATH)
+    console.log('MongoDB Connected!')
 };
 
 // Handle any errors when starting the server
