@@ -1,8 +1,9 @@
 const TelegramService = require('../Services/TelegramService')
 const TelegramUserService = require('../Services/TelegramUserService')
 const PlanningCenterService = require('../Services/PlanningCenterService')
-
-const SundayServiceId = '1410194'
+const ScheduleEventsService = require('../Services/ScheduleEventsService')
+const constants = require('../Other/constants')
+const moment = require('moment')
 
 module.exports = [
     {
@@ -22,7 +23,7 @@ module.exports = [
                 // TelegramService.createPull()
                 // TelegramService.sendDice()
                 // await TelegramService.setWebhook('')
-                // res = await TelegramService.setWebhook('https://e6e6-212-55-90-219.ngrok-free.app/telegram')
+                // res = await TelegramService.setWebhook('https://ee47-185-228-103-207.ngrok-free.app/telegram')
                 // res = await TelegramService.getWebhookInfo()
                 // res = await TelegramService.deleteWebhook()
 
@@ -50,53 +51,70 @@ module.exports = [
         method: 'POST',
         path: '/telegram',
         handler: async(req,h) => {
-            // console.log('Incoming Message Req',req)
-            let { payload } = req
-            // IS bot blocked
-            if(payload.my_chat_member){
-                if(
-                    payload.my_chat_member.new_chat_member.user.username === 'gn_church_bot' &&
-                    payload.my_chat_member.new_chat_member.status === 'kicked'
-                ){
-                    await TelegramUserService.updateOne( { userId: payload.my_chat_member.chat.id }, { active: false } )
+            try {
+                // console.log('Incoming Message Req',req)
+                let { payload } = req
+                // Telegram User Functional -> rework!
+                // if(payload.my_chat_member){
+                //     if(
+                //         payload.my_chat_member.new_chat_member.user.username === 'gn_church_bot' &&
+                //         payload.my_chat_member.new_chat_member.status === 'kicked'
+                //     ){
+                //         await TelegramUserService.updateOne( { userId: payload.my_chat_member.chat.id }, { active: false } )
+                //     }
+                //     return { data: false }
+                // }
+                // Other text functional
+                let { 
+                    text: commandText,
+                    date: updatedAt,
+                    chat: chat,
+                    from: user  
+                }= payload.message
+
+                //  Telegram User Functional -> rework!
+                //  let account = await TelegramUserService.getOne({ userId: user.id })
+                //  let res = await TelegramService.getChatInfo(user.id)
+                //  if(!account){
+                //     let userData = {
+                //         userId: user.id,
+                //         active: true,
+                //         lastMessageAt: new Date(updatedAt)
+                //     }
+                //     account = await TelegramUserService.create(userData)
+                //  }else{
+                //     await TelegramUserService.updateOne({ _id: account._id }, { lastMessageAt: updatedAt, active: true })
+                //  }
+
+                switch(commandText){
+                    case '/setschedule': {
+                        const availableScheduledTypes = Object.values(constants.ScheduleServiceTypes)
+                        await TelegramService.sendMenuButtons(chat.id,'Select Schedule Type',[availableScheduledTypes])
+                        return { data: true }
+                    }
+                    default: {
+                        for (const key in constants.ScheduleServiceTypes) {
+                            if(constants.ScheduleServiceTypes[key] === commandText){
+                                // Hard code every thursday
+                                const nextDate = moment().utc().startOf('hour').add(1,'weeks').isoWeekday(4).set({hour: 13, minute: 0}).toDate()
+                                await ScheduleEventsService.create({
+                                    chatId: chat.id,
+                                    nextSentAt: nextDate,
+                                    type: key
+                                })
+                                await TelegramService.sendMessage(chat.id,`Success! Next time it will work at ${moment(nextDate).format('DD/MM HH:mm')} by UTC`)
+                                return { data: true }
+                            }
+                        }
+                        await TelegramService.sendMessage(chat.id,'Unknown command')
+                        return { data: false }
+                    }
                 }
+            } catch (error) {
+                console.log('ROUTE ERROR',error)
                 return { data: false }
             }
-            // Other text functional
-            let { 
-                text: commandText,
-                date: updatedAt,
-                chat: chat,
-                from: user  
-             }= payload.message
 
-             let account = await TelegramUserService.getOne({ userId: user.id })
-             let res = await TelegramService.getChatInfo(user.id)
-             if(!account){
-                let userData = {
-                    userId: user.id,
-                    active: true,
-                    lastMessageAt: new Date(updatedAt)
-                }
-                account = await TelegramUserService.create(userData)
-             }else{
-                await TelegramUserService.updateOne({ _id: account._id }, { lastMessageAt: updatedAt, active: true })
-             }
-
-             switch(commandText){
-                case '/test': {
-                    // await TelegramService.sendMessage(chat.id,'Test successful')
-                    await TelegramService.sendMenuButtons(chat.id,'Choose text buttons',[
-                        ['test1','test2'],
-                        ['test3']
-                    ])
-                    return { data: true }
-                }
-                default: {
-                    await TelegramService.sendMessage(chat.id,'Unknown command')
-                    return { data: false }
-                }
-             }
         },
         options: {
 

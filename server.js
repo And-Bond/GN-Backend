@@ -5,6 +5,9 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose')
 dotenv.config()
 
+const cronJob = require('./Other/CronJob')
+const handelbars = require('./Templates/HandelBars')
+
 const { API_HOST, API_PATH, MONGODB_PATH } = process.env
 
 const routes = require('./Routes/index')

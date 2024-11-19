@@ -6,22 +6,29 @@ const { TELEGRAM_KEY } = process.env
 
 const telegramPath = 'https://api.telegram.org/bot' + TELEGRAM_KEY
 
+const api = axios.create(
+    {
+        baseURL: telegramPath
+    }
+)
+
 const getMe = async () => {
-    return axios.get(telegramPath + '/getMe')
+    return api.get('/getMe')
 }
 
 const getUpdates = async () => {
-    return axios.get(telegramPath + '/getUpdates')
+    return api.get('/getUpdates')
 }
 
-const sendMessage = async (chatId, message) => {
-    return axios.post(telegramPath + '/sendMessage', {
+const sendMessage = async (chatId, message, options) => {
+    return api.post('/sendMessage', {
         chat_id: chatId,
-        text : message
+        text : message,
+        ...options
     })
 }
 const sendMenuButtons = async (chatId, message, buttons) => {
-    return axios.post(`${telegramPath}/sendMessage`, {
+    return api.post('/sendMessage', {
         chat_id: chatId,
         text: message,
         reply_markup: {
@@ -33,15 +40,15 @@ const sendMenuButtons = async (chatId, message, buttons) => {
 };
 
 const getChatInfo = async (chatId) => {
-    return axios.get(telegramPath + `/getChat?chat_id=${chatId}`)
+    return api.get(`/getChat?chat_id=${chatId}`)
 }
 
 const getMemberInfoFromChat = async (chatId, userId) => {
-    return axios.get(telegramPath + `/getChatMember?chat_id=-${chatId}&user_id=${userId}`)
+    return api.get(`/getChatMember?chat_id=-${chatId}&user_id=${userId}`)
 }
 
 const createPull = async (chatId, question, options, isAnonymous) => {
-    return axios.post(telegramPath + '/sendPoll', {
+    return api.post('/sendPoll', {
         chat_id: chatId,
         question: question,
         options: options,
@@ -50,24 +57,24 @@ const createPull = async (chatId, question, options, isAnonymous) => {
 }
 
 const sendDice = async (chatId) => {
-    return axios.post(telegramPath + '/sendDice', {
+    return api.post('/sendDice', {
         chat_id: chatId
     })
 }
 
 const setWebhook = async (path) => {
     let url = encodeURI(path)
-    return axios.post(telegramPath + '/setWebhook',{
+    return api.post('/setWebhook',{
         url: url
     })
 }
 
 const getWebhookInfo = async () => {
-    return axios.post(telegramPath + '/getWebhookInfo')
+    return api.post('/getWebhookInfo')
 }
 
 const deleteWebhook = async () => {
-    return axios.post(telegramPath + '/deleteWebhook')
+    return api.post('/deleteWebhook')
 }
 
 module.exports = {

@@ -26,11 +26,8 @@ const getOrganizationPeople = async () => api.get('/people')
 const getServiceTypes = async () => api.get('/service_types')
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/plan
-const getPlansList = async (serviceTypeId) => api.get('/service_types/' + serviceTypeId + '/plans', {
-    params: {
-        order: 'sort_date',
-        filter: 'future'
-    }
+const getPlansList = async (serviceTypeId, params) => api.get('/service_types/' + serviceTypeId + '/plans', {
+    params: params
 })
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/song
