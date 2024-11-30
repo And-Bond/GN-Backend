@@ -41,8 +41,10 @@ const init = async () => {
     await mongoose.connect(MONGODB_PATH)
     console.log('MongoDB Connected!')
     // Setting webhook path to telegram bot once deployed
-    await setWebhook(API_PATH + '/telegram')
-    console.log('Telegram Webhook set to ',API_PATH + '/telegram')
+    if(API_PATH !== 'localhost'){
+        await setWebhook(API_PATH + '/telegram')
+        console.log('Telegram Webhook set to ',API_PATH + '/telegram')
+    }
 };
 
 // Handle any errors when starting the server
