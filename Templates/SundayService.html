@@ -1,0 +1,7 @@
+<b>Недільне служіння {{date}}</b>
+
+<b>Список пісень:</b>
+{{#each songs}}
+<b>{{add @index 1}}. {{this.title}}</b>
+ {{!-- <i>{{this.description}}</i> --}}
+{{/each}}
