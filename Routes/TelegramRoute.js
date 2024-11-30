@@ -36,7 +36,7 @@ module.exports = [
                 // let testSongId = allSongs[2]?.relationships?.song?.data?.id
                 // res = await PlanningCenterService.getAttachmentsBySongArrangement(testSongId,testArrangmentId)
                 //  ////////////////////////////
-                return { data: res.data }
+                return { data: true }
             } catch (error) {
                 console.log('ROUTE ERROR:',error)
                 return { data: false }
