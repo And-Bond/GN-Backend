@@ -16,7 +16,7 @@ const init = async () => {
     // Create a new Hapi server instance
     const server = Hapi.server({
         port: API_HOST,        // Set the port
-        host: API_PATH, // Set the host
+        host: '0.0.0.0', // Set the host
     });
     
     console.log(`path:host ${API_PATH}:${API_HOST}`)
