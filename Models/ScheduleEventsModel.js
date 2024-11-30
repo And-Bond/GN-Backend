@@ -13,9 +13,7 @@ const ScheduleEvent = new Schema({
     },
     type: {
         type: String,
-        enum: [
-            constants.ScheduleServiceTypes.SUNDAY_SERVICE_REMINDER
-        ]
+        enum: Object.keys(constants.ScheduleServiceTypesCode)
     }
 })
 

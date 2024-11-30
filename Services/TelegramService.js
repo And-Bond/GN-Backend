@@ -27,6 +27,13 @@ const sendMessage = async (chatId, message, options) => {
         ...options
     })
 }
+/**
+ * 
+ * @param {string} chatId 
+ * @param {string} message 
+ * @param {Array<string[]>} buttons 
+ * @returns 
+ */
 const sendMenuButtons = async (chatId, message, buttons) => {
     return api.post('/sendMessage', {
         chat_id: chatId,
@@ -35,6 +42,24 @@ const sendMenuButtons = async (chatId, message, buttons) => {
             keyboard: buttons.map(row => row.map(text => ({ text }))),
             resize_keyboard: true,
             one_time_keyboard: true
+        }
+    });
+};
+
+/**
+ * 
+ * @param {string} chatId 
+ * @param {string} message 
+ * @param {Array<{text: string, callback_data: string}[]>} buttons 
+ */
+const sendInlineMenuButtons = async (chatId, message, buttons) => {
+    return api.post('/sendMessage', {
+        chat_id: chatId,
+        text: message,
+        reply_markup: {
+            inline_keyboard: buttons.map(row =>
+                row.map(({ text, callback_data }) => ({ text, callback_data }))
+            )
         }
     });
 };
@@ -88,5 +113,6 @@ module.exports = {
     setWebhook,
     getWebhookInfo,
     sendMenuButtons,
-    deleteWebhook
+    deleteWebhook,
+    sendInlineMenuButtons
 }

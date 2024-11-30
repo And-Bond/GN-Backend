@@ -23,7 +23,7 @@ module.exports = [
                 // TelegramService.createPull()
                 // TelegramService.sendDice()
                 // await TelegramService.setWebhook('')
-                // res = await TelegramService.setWebhook('https://ee47-185-228-103-207.ngrok-free.app/telegram')
+                // res = await TelegramService.setWebhook('https://42af-212-55-87-218.ngrok-free.app/telegram')
                 // res = await TelegramService.getWebhookInfo()
                 // res = await TelegramService.deleteWebhook()
 
@@ -52,62 +52,69 @@ module.exports = [
         path: '/telegram',
         handler: async(req,h) => {
             try {
-                // console.log('Incoming Message Req',req)
+                let commandText;
+                let chat;
+                let from;
                 let { payload } = req
-                // Telegram User Functional -> rework!
-                // if(payload.my_chat_member){
-                //     if(
-                //         payload.my_chat_member.new_chat_member.user.username === 'gn_church_bot' &&
-                //         payload.my_chat_member.new_chat_member.status === 'kicked'
-                //     ){
-                //         await TelegramUserService.updateOne( { userId: payload.my_chat_member.chat.id }, { active: false } )
-                //     }
-                //     return { data: false }
-                // }
-                // Other text functional
-                let { 
-                    text: commandText,
-                    date: updatedAt,
-                    chat: chat,
-                    from: user  
-                }= payload.message
-
-                //  Telegram User Functional -> rework!
-                //  let account = await TelegramUserService.getOne({ userId: user.id })
-                //  let res = await TelegramService.getChatInfo(user.id)
-                //  if(!account){
-                //     let userData = {
-                //         userId: user.id,
-                //         active: true,
-                //         lastMessageAt: new Date(updatedAt)
-                //     }
-                //     account = await TelegramUserService.create(userData)
-                //  }else{
-                //     await TelegramUserService.updateOne({ _id: account._id }, { lastMessageAt: updatedAt, active: true })
-                //  }
-
+                // Inline command
+                if(payload?.message){
+                    commandText = payload?.message?.text
+                    chat = payload?.message?.chat
+                    from = payload?.message?.from
+                }
+                // Command through buttons
+                if(payload?.callback_query){
+                    commandText = payload.callback_query.data
+                    from = payload?.callback_query?.from
+                    chat = payload?.callback_query?.message?.chat
+                }
+                // If command was sent from group we trim it because it will start with bot name
+                if(['group','supergroup'].includes(chat.type) && commandText.includes(constants.BotName)){
+                    commandText = commandText.replaceAll(constants.BotName,'')
+                }
+                // We can't define command text, ignore
+                if(!commandText){
+                    return 'Вибачте, але я не розумію, що ви від мене хочете('
+                }
                 switch(commandText){
-                    case '/setschedule': {
-                        const availableScheduledTypes = Object.values(constants.ScheduleServiceTypes)
-                        await TelegramService.sendMenuButtons(chat.id,'Select Schedule Type',[availableScheduledTypes])
+                    case '/reminder': {
+                        const availableScheduledTypesForSend = [
+                            Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
+                        ]
+                        await TelegramService.sendInlineMenuButtons(chat.id,'Вибери тип нагадування',availableScheduledTypesForSend)
                         return { data: true }
                     }
                     default: {
-                        for (const key in constants.ScheduleServiceTypes) {
-                            if(constants.ScheduleServiceTypes[key] === commandText){
+                        for (const key in constants.ScheduleServiceTypesHuman) {
+                            // Check if it some schedule events type setting
+                            if(key === commandText){
+                                const isExists = await ScheduleEventsService.getOne(
+                                    {
+                                        chatId: chat.id,
+                                        type: key
+                                    }
+                                )
+                                // Do not create dups
+                                if(isExists){
+                                    await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(isExists.nextSentAt).utcOffset('+02:00').format('DD/MM HH:mm')}`)
+                                    return { data: true }
+                                }
                                 // Hard code every thursday
-                                const nextDate = moment().utc().startOf('hour').add(1,'weeks').isoWeekday(4).set({hour: 13, minute: 0}).toDate()
+                                const nextDate = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
+                                if(moment().utc().isAfter(nextDate)){
+                                    nextDate.add(1,'week')
+                                }
                                 await ScheduleEventsService.create({
                                     chatId: chat.id,
-                                    nextSentAt: nextDate,
+                                    nextSentAt: nextDate.toDate(),
                                     type: key
                                 })
-                                await TelegramService.sendMessage(chat.id,`Success! Next time it will work at ${moment(nextDate).format('DD/MM HH:mm')} by UTC`)
+                                await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(nextDate).utcOffset('+02:00').format('DD/MM HH:mm')}`)
                                 return { data: true }
                             }
                         }
-                        await TelegramService.sendMessage(chat.id,'Unknown command')
-                        return { data: false }
+                        // await TelegramService.sendMessage(chat.id,'Я не знаю цю команду!')
+                        return { data: true }
                     }
                 }
             } catch (error) {

@@ -12,11 +12,10 @@ const TelegramService = require('../Services/TelegramService')
 
 const SundayServiceTemplate = fs.readFileSync(path.resolve(__dirname, '../Templates/SundayService.html'), 'utf-8')
 
-console.log('CRON Service Works!');
+console.log('\n-------------------CRON--------------------\n')
+console.log('            CRON Service Works!            ');
+console.log('\n-------------------CRON--------------------\n')
 
-const sundayServiceHTMLTemplate = `
-
-`
 
 const check = async () => {
     console.log('Schedule Events Check')
@@ -33,7 +32,8 @@ const check = async () => {
             }
         }
     )
-    let sundayService = allSchedules.filter(sc => sc.type === constants.ScheduleServiceTypes.SUNDAY_SERVICE_REMINDER)
+    // Sunday Service Reminder
+    let sundayService = allSchedules.filter(sc => sc.type === constants.ScheduleServiceTypesCode.SUNDAY_SERVICE_REMINDER)
     if(sundayService.length){
         const plans = await PlanningCenterService.getPlansList(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,{
             order: 'sort_date',
@@ -55,21 +55,30 @@ const check = async () => {
         })
 
         for(let schedule of sundayService){
-            await TelegramService.sendMessage(schedule.chatId,message, { parse_mode: 'HTML' })
-            let nextTimeSchedule = moment(schedule.nextSendAt).add(1,'week')
-            await ScheduleEventsService.updateOne(
-                {
-                    _id: schedule._id,
-                },
-                {
-                    $set: {
-                        nextSendAt: nextTimeSchedule
-                    }
+            try{
+                await TelegramService.sendMessage(schedule.chatId, message, { parse_mode: 'HTML' })
+                // Hard code every thursday
+                const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
+                if(moment().utc().isAfter(nextTimeSchedule)){
+                    nextTimeSchedule.add(1,'week')
                 }
-            )
+                await ScheduleEventsService.updateOne(
+                    {
+                        _id: schedule._id,
+                    },
+                    {
+                        $set: {
+                            nextSendAt: nextTimeSchedule
+                        }
+                    }
+                )
+            } catch(err) {
+                console.log('Schedule Events send err',err,'DATA:',schedule)
+                continue
+            }
         }
     }
 }
 
-// cron.schedule('*/15 * * * *', check)
-check()
+cron.schedule('*/15 * * * *', check)
+// check()
