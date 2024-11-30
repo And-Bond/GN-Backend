@@ -18,7 +18,7 @@ console.log('\n-------------------CRON--------------------\n')
 
 
 const check = async () => {
-    console.log('Schedule Events Check')
+    console.log('Schedule Events Check', new Date())
     const allSchedules = await ScheduleEventsService.getMany(
         {
             nextSendAt: {
