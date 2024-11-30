@@ -18,7 +18,6 @@ console.log('\n-------------------CRON--------------------\n')
 
 
 const check = async () => {
-    console.log('Schedule Events Check', new Date())
     const allSchedules = await ScheduleEventsService.getMany(
         {
             nextSendAt: {
@@ -32,8 +31,10 @@ const check = async () => {
             }
         }
     )
+    console.log('Schedule Events Check', new Date(), 'All schedules length',allSchedules?.length)
     // Sunday Service Reminder
     let sundayService = allSchedules.filter(sc => sc.type === constants.ScheduleServiceTypesCode.SUNDAY_SERVICE_REMINDER)
+    console.log('SUNDAY SERVICE',sundayService?.length)
     if(sundayService.length){
         const plans = await PlanningCenterService.getPlansList(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,{
             order: 'sort_date',
