@@ -31,6 +31,17 @@ const init = async () => {
             return 'GN Backed is working good';
         }
     });
+
+    // Log after the response is sent
+    server.ext('onPreResponse', (request, h) => {
+        const response = request.response;
+        if (response.isBoom) {
+            console.error(`Error ${response.output.statusCode} ${response.output.payload.message}`);
+        } else {
+            console.log(`${request.method.toUpperCase()} ${request.path} ${response.statusCode}`);
+        }
+        return h.continue;
+    })
     
     server.route(routes)
 
