@@ -8,7 +8,7 @@ dotenv.config()
 const cronJob = require('./Other/CronJob')
 const handelbars = require('./Templates/HandelBars')
 
-const { API_HOST, API_PATH, MONGODB_PATH } = process.env
+const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH } = process.env
 
 const routes = require('./Routes/index')
 
