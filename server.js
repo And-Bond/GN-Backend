@@ -18,6 +18,8 @@ const init = async () => {
         port: API_HOST,        // Set the port
         host: API_PATH, // Set the host
     });
+    
+    console.log(`path:host ${API_PATH}:${API_HOST}`)
 
     // Basic route: Responds with "Hello, Hapi!" when accessed via GET
     server.route({
