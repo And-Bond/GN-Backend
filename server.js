@@ -12,6 +12,8 @@ const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH } = process.env
 
 const routes = require('./Routes/index')
 
+const { setWebhook } = require('./Services/TelegramService')
+
 const init = async () => {
     // Create a new Hapi server instance
     const server = Hapi.server({
@@ -35,8 +37,12 @@ const init = async () => {
     // Start the server
     await server.start();
     console.log('Server running on %s', server.info.uri);
+    // Conecting to mongoDb
     await mongoose.connect(MONGODB_PATH)
     console.log('MongoDB Connected!')
+    // Setting webhook path to telegram bot once deployed
+    await setWebhook(API_PATH + '/telegram')
+    console.log('Telegram Webhook set to ',API_PATH + '/telegram')
 };
 
 // Handle any errors when starting the server
