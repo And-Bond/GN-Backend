@@ -43,7 +43,7 @@ const check = async () => {
             per_page: 1
         })
         const nextSundayPlan = plans.data?.data?.[0]
-        if(moment(nextSundayPlan.attributes.sort_date).isBefore(moment())){
+        if(!nextSundayPlan || moment(nextSundayPlan?.attributes?.sort_date).isBefore(moment())){
             console.warn('Failed to send Sunday Service reminder, no plan set!!!')
         }else {
             res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id)
