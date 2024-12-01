@@ -13,30 +13,7 @@ module.exports = [
             try {
                 console.log('test')
                 let res;
-                // res = await TelegramService.getChatInfo(1688733747)
-                // res = await TelegramService.sendMessage(1688733747,'Yo')
-                // TelegramService.getMe()
-                // res = await TelegramService.getUpdates()
-                // TelegramService.postMessage()
-                // TelegramService.getChatInfo()
-                // TelegramService.getMemberInfoFromChat()  
-                // TelegramService.createPull()
-                // TelegramService.sendDice()
-                // await TelegramService.setWebhook('')
-                // res = await TelegramService.setWebhook('https://42af-212-55-87-218.ngrok-free.app/telegram')
-                // res = await TelegramService.getWebhookInfo()
-                // res = await TelegramService.deleteWebhook()
-
-                // Part with songs
-                // res = await PlanningCenterService.getPlansList(SundayServiceId)
-                // let nextSundayPlan = res.data?.data?.[0]
-                // res = await PlanningCenterService.getPlanItems(SundayServiceId,nextSundayPlan?.id)
-                // let allSongs = res.data.data.filter(item => item.attributes.item_type === 'song')
-                // let testArrangmentId = allSongs[2]?.relationships?.arrangement?.data?.id
-                // let testSongId = allSongs[2]?.relationships?.song?.data?.id
-                // res = await PlanningCenterService.getAttachmentsBySongArrangement(testSongId,testArrangmentId)
-                //  ////////////////////////////
-                return { data: true }
+                return { message: 'This is test GET route, if you see this all is working fine'}
             } catch (error) {
                 console.log('ROUTE ERROR:',error)
                 return { data: false }

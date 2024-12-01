@@ -8,7 +8,7 @@ dotenv.config()
 const cronJob = require('./Other/CronJob')
 const handelbars = require('./Templates/HandelBars')
 
-const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH } = process.env
+const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = process.env
 
 const routes = require('./Routes/index')
 
@@ -18,11 +18,9 @@ const init = async () => {
     // Create a new Hapi server instance
     const server = Hapi.server({
         port: API_HOST,        // Set the port
-        host: '0.0.0.0', // Set the host
+        host: NODE_ENV === 'LOCAL' ? API_PATH : '0.0.0.0', // Set the host
     });
     
-    console.log(`path:host ${API_PATH}:${API_HOST}`)
-
     // Basic route: Responds with "Hello, Hapi!" when accessed via GET
     server.route({
         method: 'GET',
@@ -36,7 +34,7 @@ const init = async () => {
     server.ext('onPreResponse', (request, h) => {
         const response = request.response;
         if (response.isBoom) {
-            console.error(`Error ${response.output.statusCode} ${response.output.payload.message}`);
+            console.error(`${response.output.statusCode} ${response.output.payload.message}`);
         } else {
             console.log(`${request.method.toUpperCase()} ${request.path} ${response.statusCode}`);
         }
@@ -49,10 +47,10 @@ const init = async () => {
     await server.start();
     console.log('Server running on %s', server.info.uri);
     // Conecting to mongoDb
-    await mongoose.connect(MONGODB_PATH)
-    console.log('MongoDB Connected!')
+    let mongoRes = await mongoose.connect(MONGODB_PATH)
+    console.log('MongoDB Connected!',mongoRes?.connections?.[0]?._connectionString || '')
     // Setting webhook path to telegram bot once deployed
-    if(API_PATH !== 'localhost'){
+    if(NODE_ENV === 'PROD'){
         await setWebhook(API_PATH + '/telegram')
         console.log('Telegram Webhook set to ',API_PATH + '/telegram')
     }
