@@ -8,7 +8,7 @@ const ScheduleEvent = new Schema({
         type: String,
         // required: true
     },
-    nextSentAt: {
+    nextSendAt: {
         type: Date
     },
     type: {

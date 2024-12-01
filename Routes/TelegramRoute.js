@@ -73,7 +73,7 @@ module.exports = [
                                 )
                                 // Do not create dups
                                 if(isExists){
-                                    await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(isExists.nextSentAt).utcOffset('+02:00').format('DD/MM HH:mm')}`)
+                                    await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(isExists.nextSendAt).utcOffset('+02:00').format('DD/MM HH:mm')}`)
                                     return { data: true }
                                 }
                                 // Hard code every thursday
@@ -83,7 +83,7 @@ module.exports = [
                                 }
                                 await ScheduleEventsService.create({
                                     chatId: chat.id,
-                                    nextSentAt: nextDate.toDate(),
+                                    nextSendAt: nextDate.toDate(),
                                     type: key
                                 })
                                 await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(nextDate).utcOffset('+02:00').format('DD/MM HH:mm')}`)
