@@ -86,5 +86,5 @@ const check = async () => {
     }
 }
 
-// cron.schedule('*/15 * * * *', check)
-check()
+cron.schedule('*/15 * * * *', check)
+// check()
