@@ -45,6 +45,10 @@ module.exports = [
                     from = payload?.callback_query?.from
                     chat = payload?.callback_query?.message?.chat
                 }
+                if(!chat){
+                    console.error('Invalid chat variable!',payload)
+                    return 'Не можу знайти потрібні дані, вибачте('
+                }
                 // If command was sent from group we trim it because it will start with bot name
                 if(['group','supergroup'].includes(chat.type) && commandText.includes(constants.BotName)){
                     commandText = commandText.replaceAll(constants.BotName,'')

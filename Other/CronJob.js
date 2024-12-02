@@ -38,7 +38,7 @@ const check = async () => {
     console.log('SUNDAY SERVICE',sundayService?.length)
     if(sundayService.length){
         const plans = await PlanningCenterService.getPlansList(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,{
-            order: 'sort_date',
+            order: '-sort_date',
             filter: 'future',
             per_page: 1
         })

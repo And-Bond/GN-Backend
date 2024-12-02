@@ -1,3 +1,8 @@
+const dotenv = require('dotenv')
+dotenv.config()
+
+const BotName = process.env.NODE_ENV === 'PROD' ? '@gn_church_bot' : '@gn_church_dev_bot'
+
 module.exports = {
     ScheduleServiceTypesHuman: {
         'SUNDAY_SERVICE_REMINDER': 'Нагадування списку пісень на неділю'
@@ -9,5 +14,5 @@ module.exports = {
     PlanningCenterServiceIds: {
         SUNDAY_SERVICE: '1410194'
     },
-    BotName: '@gn_church_bot'
+    BotName: BotName
 }
