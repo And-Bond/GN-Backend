@@ -5,6 +5,8 @@ const ScheduleEventsService = require('../Services/ScheduleEventsService')
 const constants = require('../Other/constants')
 const moment = require('moment')
 
+const ProPresenterService = require('../Services/ProPresenterService')
+
 module.exports = [
     {
         method: 'GET',
@@ -63,6 +65,18 @@ module.exports = [
                             Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
                         ]
                         await TelegramService.sendInlineMenuButtons(chat.id,'Вибери тип нагадування',availableScheduledTypesForSend)
+                        return { data: true }
+                    }
+                    case '/ppNext': {
+                        await ProPresenterService.slideNext()
+
+                        await TelegramService.sendMessage(chat.id,`Next slide`)
+                        return { data: true }
+                    }
+                    case '/ppPrev': {
+                        await ProPresenterService.slidePrev()
+
+                        await TelegramService.sendMessage(chat.id,`Prev slide`)
                         return { data: true }
                     }
                     default: {
