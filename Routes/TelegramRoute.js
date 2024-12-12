@@ -33,6 +33,11 @@ module.exports = [
                 let chat;
                 let from;
                 let { payload } = req
+
+                // Skip this actions
+                if(payload.edited_message){
+                    return { data: true }
+                }
                 // Inline command
                 if(payload?.message){
                     commandText = payload?.message?.text
