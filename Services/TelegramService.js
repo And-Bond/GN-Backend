@@ -20,11 +20,12 @@ const getUpdates = async () => {
     return api.get('/getUpdates')
 }
 
-const sendMessage = async (chatId, message, options) => {
+const sendMessage = async (payload) => {
     return api.post('/sendMessage', {
-        chat_id: chatId,
-        text : message,
-        ...options
+        chat_id: payload.chatId,
+        text : payload.message,
+        message_thread_id: payload.messageThreadId,
+        ...payload.options
     })
 }
 /**
@@ -52,12 +53,13 @@ const sendMenuButtons = async (chatId, message, buttons) => {
  * @param {string} message 
  * @param {Array<{text: string, callback_data: string}[]>} buttons 
  */
-const sendInlineMenuButtons = async (chatId, message, buttons) => {
+const sendInlineMenuButtons = async (payload) => {
     return api.post('/sendMessage', {
-        chat_id: chatId,
-        text: message,
+        chat_id: payload.chatId,
+        text: payload.message,
+        message_thread_id: payload.messageThreadId,
         reply_markup: {
-            inline_keyboard: buttons.map(row =>
+            inline_keyboard: payload.buttons.map(row =>
                 row.map(({ text, callback_data }) => ({ text, callback_data }))
             )
         }

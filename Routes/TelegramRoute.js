@@ -38,12 +38,14 @@ module.exports = [
                     commandText = payload?.message?.text
                     chat = payload?.message?.chat
                     from = payload?.message?.from
+                    threadId = payload?.message?.message_thread_id
                 }
                 // Command through buttons
                 if(payload?.callback_query){
                     commandText = payload.callback_query.data
                     from = payload?.callback_query?.from
                     chat = payload?.callback_query?.message?.chat
+                    threadId = payload?.callback_query?.message?.message_thread_id 
                 }
                 if(!chat){
                     console.error('Invalid chat variable!',payload)
@@ -62,7 +64,15 @@ module.exports = [
                         const availableScheduledTypesForSend = [
                             Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
                         ]
-                        await TelegramService.sendInlineMenuButtons(chat.id,'Вибери тип нагадування',availableScheduledTypesForSend)
+                        let payload = {
+                            chatId: chat.id,
+                            message: `Вибери тип нагадування`,
+                            buttons: availableScheduledTypesForSend
+                        }
+                        if(threadId){
+                            payload['messageThreadId'] = threadId
+                        }
+                        await TelegramService.sendInlineMenuButtons(payload)
                         return { data: true }
                     }
                     default: {
@@ -75,9 +85,16 @@ module.exports = [
                                         type: key
                                     }
                                 )
+                                let payload = {
+                                    chatId: chat.id,
+                                    message: `Добре! Наступного разу нагадування спрацює ${moment(isExists.nextSendAt).utcOffset('+02:00').format('DD/MM HH:mm')}`
+                                }
+                                if(threadId){
+                                    payload['messageThreadId'] = threadId
+                                }
                                 // Do not create dups
                                 if(isExists){
-                                    await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(isExists.nextSendAt).utcOffset('+02:00').format('DD/MM HH:mm')}`)
+                                    await TelegramService.sendMessage(payload)
                                     return { data: true }
                                 }
                                 // Hard code every thursday
@@ -90,11 +107,10 @@ module.exports = [
                                     nextSendAt: nextDate.toDate(),
                                     type: key
                                 })
-                                await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(nextDate).utcOffset('+02:00').format('DD/MM HH:mm')}`)
+                                await TelegramService.sendMessage(payload)
                                 return { data: true }
                             }
                         }
-                        // await TelegramService.sendMessage(chat.id,'Я не знаю цю команду!')
                         return { data: true }
                     }
                 }
