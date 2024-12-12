@@ -5,4 +5,5 @@ const planningCenterRoute = require('./PlanningCenterRoute')
 module.exports = [].concat(
     telegramRoutes,
     propresenterRoutes,
+    planningCenterRoute
 )

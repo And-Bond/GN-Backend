@@ -14,5 +14,11 @@ module.exports = {
     PlanningCenterServiceIds: {
         SUNDAY_SERVICE: '1410194'
     },
+    PlanningCenterWebhookEvents: {
+        PLAN_UPDATED: 'services.v2.events.plan.updated',
+        PLAN_DESTROYED: 'services.v2.events.plan.destroyed',
+        PLAN_UPDATED: 'services.v2.events.plan.created',
+        LIVE_UPDATED: 'services.v2.events.plan.live.updated'
+    },
     BotName: BotName
 }

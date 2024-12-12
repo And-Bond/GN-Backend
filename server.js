@@ -30,6 +30,11 @@ const init = async () => {
         }
     });
 
+    server.ext('onRequest', (request, h) => {
+        console.log(`Incoming Request: ${request.method.toUpperCase()} ${request.path}`);
+        return h.continue;
+    });
+
     // Log after the response is sent
     server.ext('onPreResponse', (request, h) => {
         const response = request.response;
