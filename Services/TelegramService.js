@@ -21,12 +21,27 @@ const getUpdates = async () => {
 }
 
 const sendMessage = async (payload) => {
-    return api.post('/sendMessage', {
+    let request = {
         chat_id: payload.chatId,
-        text : payload.message,
         message_thread_id: payload.messageThreadId,
-        ...payload.options
-    })
+        text: payload.message,
+    }
+    if(payload.parseMode){
+        request['parse_mode'] = payload.parseMode
+    }
+    return api.post('/sendMessage',request)
+}
+
+const editMessage = async (payload) => {
+    let request = {
+        chat_id: payload.chatId,
+        message_id: payload.messageId,
+        text: payload.message,
+    }
+    if(payload.parseMode){
+        request['parse_mode'] = payload.parseMode
+    }
+    return api.post('/editMessageText',request)
 }
 /**
  * 
@@ -116,5 +131,6 @@ module.exports = {
     getWebhookInfo,
     sendMenuButtons,
     deleteWebhook,
-    sendInlineMenuButtons
+    sendInlineMenuButtons,
+    editMessage
 }

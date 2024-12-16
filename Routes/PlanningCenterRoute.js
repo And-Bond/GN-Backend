@@ -2,6 +2,11 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const constants = require('../Other/constants')
+const PlanningCenterService = require('../Services/PlanningCenterService')
+const TelegramService = require('../Services/TelegramService')
+const ScheduleEventsService = require('../Services/ScheduleEventsService')
+
+const serviceId = process.env.NODE_ENV === 'PROD' ? constants.PlanningCenterServiceIds.SUNDAY_SERVICE : '1571901'
 
 module.exports = [
   {
@@ -15,11 +20,30 @@ module.exports = [
                 case constants.PlanningCenterWebhookEvents.LIVE_UPDATED:
                     for(let event of events){
                         let eventData = JSON.parse(event.attributes.payload)
-                    } 
-                    break;
-                case constants.PlanningCenterWebhookEvents.PLAN_UPDATED: 
-                    for(let event of events){
-                        let eventData = JSON.parse(event.attributes.payload)
+                        const planId = eventData.data.relationships.plan.data.id
+                        const itemId = eventData.data.relationships.item.data.id
+                        const planItems = await PlanningCenterService.getPlanItems(serviceId,planId)
+                        const itemInfo = planItems?.data?.data?.find((item) => item.id === itemId)
+                        if(itemInfo?.attributes?.title){
+                            let toSend = await ScheduleEventsService.getMany({
+                                chatId: {
+                                    $exists: true
+                                },
+                                type: constants.ScheduleServiceTypesCode.SUNDEY_SERVICE_START_TIMER_REMINDER,
+                                planItemName: itemInfo.attributes.title
+                            })
+                            for(let schedule of toSend){
+                                let payload = {
+                                    chatId: schedule.chatId,
+                                    message: 'До початку залишилося <b>10 хвилин!</b>',
+                                    parseMode: 'HTML'
+                                }
+                                if(schedule.threadId){
+                                    payload['messageThreadId'] = schedule.threadId
+                                }
+                                await TelegramService.sendMessage(payload)
+                            }
+                        }
                     } 
                     break;
                 default:

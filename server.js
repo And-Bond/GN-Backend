@@ -41,7 +41,7 @@ const init = async () => {
         if (response.isBoom) {
             console.error(`${response.output.statusCode} ${response.output.payload.message}`);
         } else {
-            console.log(`${request.method.toUpperCase()} ${request.path} ${response.statusCode}`);
+            console.log(`Response to Request: ${request.method.toUpperCase()} ${request.path} ${response.statusCode}`);
         }
         return h.continue;
     })
