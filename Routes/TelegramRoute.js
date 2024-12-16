@@ -60,7 +60,7 @@ module.exports = [
                     return 'Не можу знайти потрібні дані, вибачте('
                 }
                 // If command was sent from group we trim it because it will start with bot name
-                if(['group','supergroup'].includes(chat.type) && commandText.includes(constants.BotName)){
+                if(['group','supergroup'].includes(chat.type) && commandText?.includes(constants.BotName)){
                     commandText = commandText.replaceAll(constants.BotName,'')
                 }
                 // We can't define command text, ignore
