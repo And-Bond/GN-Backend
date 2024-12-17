@@ -49,10 +49,10 @@ module.exports = [
                 default:
                     break;
             }
-            return { message: 'test message'}
+            return h.response({ message: 'test message'}).code(200)
           } catch (error) {
               console.log('ROUTE ERROR:',error)
-              return { data: false }
+              return h.response({ data: 'test message'}).code(200)
           }
 
       },
