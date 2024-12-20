@@ -64,7 +64,7 @@ const check = async () => {
     
             for(let schedule of sundayService){
                 try{
-                    await TelegramService.sendMessage(schedule.chatId, message, { parse_mode: 'HTML' })
+                    await TelegramService.sendMessage({ chatId: schedule.chatId, message: message, parse_mode: 'HTML' })
                     // Hard code every thursday
                     const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
                     if(moment().utc().isAfter(nextTimeSchedule)){
