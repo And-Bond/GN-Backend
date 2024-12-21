@@ -8,12 +8,18 @@ const ScheduleEvent = new Schema({
         type: String,
         // required: true
     },
+    threadId: {
+        type: String
+    },
     nextSendAt: {
         type: Date
     },
     type: {
         type: String,
         enum: Object.keys(constants.ScheduleServiceTypesCode)
+    },
+    planItemName: {
+        type: String
     }
 })
 

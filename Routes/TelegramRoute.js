@@ -36,25 +36,35 @@ module.exports = [
                 let commandText;
                 let chat;
                 let from;
+                let messageId;
                 let { payload } = req
+
+                // Skip this actions
+                if(payload.edited_message){
+                    return { data: true }
+                }
                 // Inline command
                 if(payload?.message){
                     commandText = payload?.message?.text
                     chat = payload?.message?.chat
                     from = payload?.message?.from
+                    messageId = payload?.message?.message_id 
+                    threadId = payload?.message?.message_thread_id
                 }
                 // Command through buttons
                 if(payload?.callback_query){
                     commandText = payload.callback_query.data
                     from = payload?.callback_query?.from
                     chat = payload?.callback_query?.message?.chat
+                    messageId = payload?.callback_query?.message?.message_id 
+                    threadId = payload?.callback_query?.message?.message_thread_id 
                 }
                 if(!chat){
                     console.error('Invalid chat variable!',payload)
                     return 'Не можу знайти потрібні дані, вибачте('
                 }
                 // If command was sent from group we trim it because it will start with bot name
-                if(['group','supergroup'].includes(chat.type) && commandText.includes(constants.BotName)){
+                if(['group','supergroup'].includes(chat.type) && commandText?.includes(constants.BotName)){
                     commandText = commandText.replaceAll(constants.BotName,'')
                 }
                 // We can't define command text, ignore
@@ -66,7 +76,15 @@ module.exports = [
                         const availableScheduledTypesForSend = [
                             Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
                         ]
-                        await TelegramService.sendInlineMenuButtons(chat.id,'Вибери тип нагадування',availableScheduledTypesForSend)
+                        let payload = {
+                            chatId: chat.id,
+                            message: `Вибери тип нагадування`,
+                            buttons: availableScheduledTypesForSend
+                        }
+                        if(threadId){
+                            payload['messageThreadId'] = threadId
+                        }
+                        await TelegramService.sendInlineMenuButtons(payload)
                         return { data: true }
                     }
                     case '/live': {
@@ -198,32 +216,55 @@ module.exports = [
                         for (const key in constants.ScheduleServiceTypesHuman) {
                             // Check if it some schedule events type setting
                             if(key === commandText){
-                                const isExists = await ScheduleEventsService.getOne(
-                                    {
-                                        chatId: chat.id,
-                                        type: key
-                                    }
-                                )
-                                // Do not create dups
-                                if(isExists){
-                                    await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(isExists.nextSendAt).utcOffset('+02:00').format('DD/MM HH:mm')}`)
-                                    return { data: true }
-                                }
-                                // Hard code every thursday
-                                const nextDate = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
-                                if(moment().utc().isAfter(nextDate)){
-                                    nextDate.add(1,'week')
-                                }
-                                await ScheduleEventsService.create({
+                                let query = {
                                     chatId: chat.id,
-                                    nextSendAt: nextDate.toDate(),
-                                    type: key
-                                })
-                                await TelegramService.sendMessage(chat.id,`Добре! Наступного разу нагадування спрацює ${moment(nextDate).utcOffset('+02:00').format('DD/MM HH:mm')}`)
+                                    type: key,
+                                }
+                                if(threadId){
+                                    query['threadId'] = threadId
+                                }
+                                const isExists = await ScheduleEventsService.getOne(query)
+                                let payload = {
+                                    chatId: chat.id,
+                                    messageId: messageId
+                                }
+                                if(threadId){
+                                    payload['messageThreadId'] = threadId
+                                }
+                                if(key === constants.ScheduleServiceTypesCode.SUNDAY_SERVICE_REMINDER){
+                                    // Hard code every thursday
+                                    const nextDate = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
+                                    if(moment().utc().isAfter(nextDate)){
+                                        nextDate.add(1,'week')
+                                    }
+                                    payload['message'] = `Добре! Наступного разу нагадування спрацює ${moment(isExists?.nextSendAt || nextDate).utcOffset('+02:00').format('DD/MM HH:mm')}`
+                                    if(!isExists){
+                                        await ScheduleEventsService.create({
+                                            chatId: chat.id,
+                                            nextSendAt: nextDate.toDate(),
+                                            type: key,
+                                            threadId: threadId
+                                        })
+                                    }
+                                }
+                                if(key === constants.ScheduleServiceTypesCode.SUNDEY_SERVICE_START_TIMER_REMINDER){
+                                    payload['message'] = `Добре! Нагадування спрацює, як тільки <b>Початок Відліку</b> буде активовано`
+                                    payload['parseMode'] = 'HTML'
+                                    if(!isExists){
+                                        await ScheduleEventsService.create({
+                                            chatId: chat.id,
+                                            // Hard code plan item that will trigger message sent
+                                            planItemName: 'Start Timer',
+                                            type: key,
+                                            threadId: threadId
+                                        })
+                                    }
+                                }
+
+                                await TelegramService.editMessage(payload)
                                 return { data: true }
                             }
                         }
-                        // await TelegramService.sendMessage(chat.id,'Я не знаю цю команду!')
                         return { data: true }
                     }
                 }

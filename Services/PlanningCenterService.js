@@ -31,7 +31,9 @@ const getPlansList = async (serviceTypeId, params) => api.get('/service_types/' 
 })
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/song
-const getOrganizationSongs = async () => api.get('/songs')
+const getOrganizationSongs = async (params) => api.get('/songs', {
+    params: params
+})
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/team
 const getOrganizationTeams = async () => api.get('/teams')
@@ -60,6 +62,10 @@ const getPlanItemArrangments = async (serviceTypeId, planId, itemId) => api.get(
 
 const getAttachmentsBySongArrangement = async (songId, arrangmentId) => api.get(`/songs/${songId}/arrangements/${arrangmentId}/attachments`)
 
+const getAttachmentFileUrl = async (attachmentId) => api.post(`attachments/${attachmentId}/open`)
+
+const getArrangementsBySong = async (songId) => api.get(`songs/${songId}/arrangements`)
+
 module.exports = {
     getOrganizationInfo,
     getOrganizationPeople,
@@ -73,5 +79,7 @@ module.exports = {
     getSongArrangmentInfo,
     getPlanItemArrangments,
     getOrganizationAttachments,
-    getAttachmentsBySongArrangement
+    getAttachmentsBySongArrangement,
+    getAttachmentFileUrl,
+    getArrangementsBySong
 }

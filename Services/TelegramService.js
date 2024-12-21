@@ -20,12 +20,28 @@ const getUpdates = async () => {
     return api.get('/getUpdates')
 }
 
-const sendMessage = async (chatId, message, options) => {
-    return api.post('/sendMessage', {
-        chat_id: chatId,
-        text : message,
-        ...options
-    })
+const sendMessage = async (payload) => {
+    let request = {
+        chat_id: payload.chatId,
+        message_thread_id: payload.messageThreadId,
+        text: payload.message,
+    }
+    if(payload.parseMode){
+        request['parse_mode'] = payload.parseMode
+    }
+    return api.post('/sendMessage',request)
+}
+
+const editMessage = async (payload) => {
+    let request = {
+        chat_id: payload.chatId,
+        message_id: payload.messageId,
+        text: payload.message,
+    }
+    if(payload.parseMode){
+        request['parse_mode'] = payload.parseMode
+    }
+    return api.post('/editMessageText',request)
 }
 /**
  * 
@@ -52,12 +68,13 @@ const sendMenuButtons = async (chatId, message, buttons) => {
  * @param {string} message 
  * @param {Array<{text: string, callback_data: string}[]>} buttons 
  */
-const sendInlineMenuButtons = async (chatId, message, buttons) => {
+const sendInlineMenuButtons = async (payload) => {
     return api.post('/sendMessage', {
-        chat_id: chatId,
-        text: message,
+        chat_id: payload.chatId,
+        text: payload.message,
+        message_thread_id: payload.messageThreadId,
         reply_markup: {
-            inline_keyboard: buttons.map(row =>
+            inline_keyboard: payload.buttons.map(row =>
                 row.map(({ text, callback_data }) => ({ text, callback_data }))
             )
         }
@@ -114,5 +131,6 @@ module.exports = {
     getWebhookInfo,
     sendMenuButtons,
     deleteWebhook,
-    sendInlineMenuButtons
+    sendInlineMenuButtons,
+    editMessage
 }
