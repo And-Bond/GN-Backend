@@ -4,8 +4,10 @@ const PlanningCenterService = require('../Services/PlanningCenterService')
 const ScheduleEventsService = require('../Services/ScheduleEventsService')
 const constants = require('../Other/constants')
 const moment = require('moment')
-
 const ProPresenterService = require('../Services/ProPresenterService')
+const dotenv = require('dotenv');
+dotenv.config()
+const { GOOGLE_API_KEY } = process.env
 
 module.exports = [
     {
@@ -65,6 +67,119 @@ module.exports = [
                             Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
                         ]
                         await TelegramService.sendInlineMenuButtons(chat.id,'Вибери тип нагадування',availableScheduledTypesForSend)
+                        return { data: true }
+                    }
+                    case '/live': {
+
+                        const axios = require('axios');
+                        const QUERY = 'goodnewssmila';
+
+                        async function getChannelId(query) {
+                            const url ='https://www.googleapis.com/youtube/v3/search';
+
+                            try {
+                              const response = await axios.get(url, {
+                                params: {
+                                  part: 'snippet',
+                                  q: query, // Поиск по никнейму канала
+                                  type: 'channel',
+                                  maxResults: 1,
+                                  key: GOOGLE_API_KEY,
+                                },
+                              });
+                          
+                              if (response.data.items.length > 0) {
+                                const channel = response.data.items[0];
+                                const channelId = channel.id.channelId;
+                                console.log(`Channel ID: ${channelId}`);
+                                return channelId;
+                              } else {
+                                console.log('Канал не найден.');
+                                return null;
+                              }
+                            } catch (error) {
+                              console.error('Ошибка при поиске канала:', error.message);
+                              return null;
+                            }
+                        }
+
+                        async function getLatestVideo(channelId) {
+                            const url = 'https://www.googleapis.com/youtube/v3/search';
+
+                            try {
+                                const response = await axios.get(url, {
+                                    params: {
+                                        part: 'snippet',
+                                        channelId: channelId,
+                                        order: 'date',
+                                        maxResults: 1,
+                                        type: 'video',
+                                        key: GOOGLE_API_KEY,
+                                    },
+                                });
+
+                                if (response.data.items.length > 0) {
+                                    const video = response.data.items[0];
+                                    const videoId = video.id.videoId;
+                                    const videoTitle = video.snippet.title;
+                                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+                                    console.log(`Latest Video Title: ${videoTitle}`);
+                                    console.log(`Video URL: ${videoUrl}`);
+                                    await TelegramService.sendMessage(chat.id,`${videoUrl}`)
+                                } else {
+                                    console.log('No videos found on the channel.');
+                                }
+                            } catch (error) {
+                                console.error('Error fetching the latest video:', error.message);
+                            }
+                        }
+
+                        async function getLiveStream(CHANNEL_ID) {
+                            const url = 'https://www.googleapis.com/youtube/v3/search';
+                          
+                            try {
+                              const response = await axios.get(url, {
+                                params: {
+                                  part: 'snippet',
+                                  channelId: CHANNEL_ID,
+                                  eventType: 'live', // searching livestram only
+                                  type: 'video',     // video type only
+                                  maxResults: 1,     // single result
+                                  key: 'AIzaSyC9QPeYOW_BelCIqVrZXwLrDFzOPIEs0k4',
+                                },
+                              });
+                          
+                              if (response.data.items.length > 0) {
+                                const liveVideo = response.data.items[0];
+                                const videoId = liveVideo.id.videoId;
+                                const videoTitle = liveVideo.snippet.title;
+                                const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                          
+                                console.log(`Live Stream Title: ${videoTitle}`);
+                                console.log(`Live Stream URL: ${videoUrl}`);
+                                await TelegramService.sendMessage(chat.id,`${videoUrl}`)
+                                return videoUrl;
+                              } else {
+                                console.log('Нет активных трансляций на канале.');
+                                await TelegramService.sendMessage(chat.id,`Трансляції зараз немає, можу запропонувати останнє відео на каналі`)
+                                await getLatestVideo(CHANNEL_ID);
+                                return null;
+                              }
+                            } catch (error) {
+                              console.error('Ошибка при поиске лайвстрима:', error.message);
+                              return null;
+                            }
+                        }
+
+                        async function main() {
+                            const channelId = await getChannelId(QUERY);
+                            if (channelId) await getLiveStream(channelId);
+                        }
+
+                        await main();
+
+                        // await TelegramService.sendMessage(chat.id,`Добренько!`)
                         return { data: true }
                     }
                     case '/ppNext': {
