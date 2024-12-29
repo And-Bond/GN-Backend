@@ -4,7 +4,7 @@ const axios = require('axios')
 dotenv.config()
 
 
-const path = 'http://192.168.1.172:3005/v1/'
+const path = 'http://192.168.68.215:3005/v1/'
 
 const api = axios.create({
     baseURL: path,
@@ -26,6 +26,7 @@ const getAllGroups = async () => api.get('groups');
 
 const getActivePresentation = async () => api.get('presentation/active');
 
+const trgSpecSlide = async (uuid, index) => api.get(`presentation/${uuid}/${index}/trigger`);
 
 
 module.exports = {
@@ -36,5 +37,6 @@ module.exports = {
     audioNext,
     audioPrev,
     getAllGroups,
-    getActivePresentation
+    getActivePresentation,
+    trgSpecSlide,
 };

@@ -144,7 +144,7 @@ module.exports = [
 
                                     console.log(`Latest Video Title: ${videoTitle}`);
                                     console.log(`Video URL: ${videoUrl}`);
-                                    await TelegramService.sendMessage(chat.id,`${videoUrl}`)
+                                    await TelegramService.sendMessage({chatId: chat.id, message: `${videoUrl}`})
                                 } else {
                                     console.log('No videos found on the channel.');
                                 }
@@ -176,11 +176,11 @@ module.exports = [
                           
                                 console.log(`Live Stream Title: ${videoTitle}`);
                                 console.log(`Live Stream URL: ${videoUrl}`);
-                                await TelegramService.sendMessage(chat.id,`${videoUrl}`)
+                                await TelegramService.sendMessage({chatId: chat.id, message:`${videoUrl}`})
                                 return videoUrl;
                               } else {
                                 console.log('Нет активных трансляций на канале.');
-                                await TelegramService.sendMessage(chat.id,`Трансляції зараз немає, можу запропонувати останнє відео на каналі`)
+                                await TelegramService.sendMessage({chatId: chat.id, message: `Трансляції зараз немає, можу запропонувати останнє відео на каналі`})
                                 await getLatestVideo(CHANNEL_ID);
                                 return null;
                               }
@@ -211,6 +211,30 @@ module.exports = [
 
                         await TelegramService.sendMessage(chat.id,`Prev slide`)
                         return { data: true }
+                    }
+                    case '/found': {
+                        const presentationId = (await ProPresenterService.getActivePresentation()).data.presentation.id.uuid
+                        await ProPresenterService.trgSpecSlide(presentationId, 1)
+                        await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 5 * 1000) // типу після того як знайшли баді, у гравців є 45 секунд щоб прибігти на голосування
+                        
+                        await TelegramService.sendMessage({chatId: chat.id, message: `Сповіщення запущено, відлік почався...`})
+                        return { data: false }
+                    }
+
+                    case '/sabotage': {
+                        const availableScheduledTypesForSend = [
+                            [{text: 'LED forms', callback_data: 'sabotage_led_type'}],
+                        ]
+                        let payload = {
+                            chatId: chat.id,
+                            message: `Вибери тип нагадування`,
+                            buttons: availableScheduledTypesForSend
+                        }
+                        if(threadId){
+                            payload['messageThreadId'] = threadId
+                        }
+                        await TelegramService.sendInlineMenuButtons(payload)
+                        return { data: true }   
                     }
                     default: {
                         for (const key in constants.ScheduleServiceTypesHuman) {
