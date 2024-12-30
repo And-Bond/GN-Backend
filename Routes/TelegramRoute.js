@@ -96,19 +96,19 @@ module.exports = [
                     }
 
                     case '🎮 Початок гри 🎮': {
-                        if (players.length < playersCountNeed) {
-                            let user = { name: payload?.message?.chat.first_name, chat_id: payload?.message?.chat.id, role: null }
+                        let user = { name: payload?.message?.chat.first_name, chat_id: payload?.message?.chat.id, role: null }
+                        if (players.length < playersCountNeed || players.find(p => p.chat_id === user.chat_id)) {
                             if (!players.find(p => p.chat_id === user.chat_id)) {
                                 players.push(user)
                                 await TelegramService.sendMessage({
                                     chatId: chat.id,
-                                    message: `Вітаю, ${chat.first_name}, скоро ти дізнаєшся свою роль`,
+                                    message: `Вітаю, ${chat.first_name}, зараз чекаємо інших гравців, скоро ти дізнаєшся свою роль`,
                                     reply_markup: {
                                         keyboard: [
                                             ['💅 Не буду грати 💅'],
                                         ],
                                         resize_keyboard: true,
-                                        one_time_keyboard: false, 
+                                        one_time_keyboard: true, 
                                     },
                                 });
                                 await TelegramService.sendMessage({chatId: adminChatId, message: `${chat.first_name}, joined to game, current players list: ${players.map(p => p.name)}, count - ${players.length}`})
@@ -122,7 +122,7 @@ module.exports = [
                                             ['💅 Не буду грати 💅'],
                                         ],
                                         resize_keyboard: true,
-                                        one_time_keyboard: false, 
+                                        one_time_keyboard: true, 
                                     },
                                 });
                             }
@@ -144,25 +144,39 @@ module.exports = [
                     }
                     case '💅 Не буду грати 💅': {
                         if (commandText === '💅 Не буду грати 💅') {
-                            players = players.filter(p => p.chat_id !== chat.id);
+                            if (players.find(p => p.chat_id === chat.id)) {
+                                players = players.filter(p => p.chat_id !== chat.id);
 
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Окей, тебе видалено зі списку гравців',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                            
-                            await TelegramService.sendMessage({
-                                chatId: adminChatId,
-                                message: `${chat.first_name}, leaved the game, current players list: ${players.map(p => p.name)}, count - ${players.length}`
-                            });
-                            console.log(players)
+                                await TelegramService.sendMessage({
+                                    chatId: chat.id,
+                                    message: 'Окей, тебе видалено зі списку гравців',
+                                    reply_markup: {
+                                        keyboard: [
+                                            ['🎮 Початок гри 🎮'],
+                                        ],
+                                        resize_keyboard: true,
+                                        one_time_keyboard: true, 
+                                    },
+                                });
+                                
+                                await TelegramService.sendMessage({
+                                    chatId: adminChatId,
+                                    message: `${chat.first_name}, leaved the game, current players list: ${players.map(p => p.name)}, count - ${players.length}`
+                                });
+                                console.log(players)
+                            } else {
+                                await TelegramService.sendMessage({
+                                    chatId: chat.id,
+                                    message: 'Шо ти мутиш, ти і так не граєш',
+                                    reply_markup: {
+                                        keyboard: [
+                                            ['🎮 Початок гри 🎮'],
+                                        ],
+                                        resize_keyboard: true,
+                                        one_time_keyboard: true, 
+                                    },
+                                });
+                            }
                         }
 
                     }
@@ -170,19 +184,20 @@ module.exports = [
                     case '🚨 Знайдено тіло 🚨': {
                         
                         if (commandText === '🚨 Знайдено тіло 🚨' && FOUND_BODY === false) {
-                            // const presentationId = (await ProPresenterService.getActivePresentation()).data.presentation.id.uuid
-                            // await ProPresenterService.trgSpecSlide(presentationId, 1)
-                            // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
+                            const presentationId = (await ProPresenterService.getActivePresentation()).data.presentation.id.uuid
+                            await ProPresenterService.trgSpecSlide(presentationId, 1)
+                            await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
                             
                             await TelegramService.sendMessage({chatId: chat.id, message: `Сповіщення запущено, у вас 45 секунд щоб прийти на обговорення, відлік почався...`})
-
+                            setTimeout(() => TelegramService.sendMessage({chatId: chat.id, message: `Час вийшов`}), 45 * 1000)
+                            
                             for (let player of players) {
                                 await TelegramService.sendMessage({
                                     chatId: player.chat_id, 
-                                    message: `${chat.first_name}, `, 
+                                    message: `${chat.first_name} знайшов(ла) тіло, у вас 45 секунд щоб прийти на місце обговорення, час пішов...`, 
                                 })
+                                setTimeout(() => TelegramService.sendMessage({chatId: chat.id, message: `Час вийшов`}), 45 * 1000)
                             }
-                            setTimeout(() => TelegramService.sendMessage({chatId: chat.id, message: `Час вийшов(`}), 45 * 1000)
                             FOUND_BODY = true
                         }
                         
