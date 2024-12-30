@@ -255,7 +255,7 @@ module.exports = [
                         for (let player of players) {
                             await TelegramService.sendMessage({
                                 chatId: player.chat_id, 
-                                message: `${chat.first_name}, в цій грі твоя роль \\-\\ ||${player.role}||`, 
+                                message: `${player.first_name}, в цій грі твоя роль \\-\\ ||${player.role}||`, 
                                 parseMode: 'MarkdownV2',
                                 reply_markup: {
                                     keyboard: [
