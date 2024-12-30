@@ -175,9 +175,14 @@ module.exports = [
                             // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
                             
                             await TelegramService.sendMessage({chatId: chat.id, message: `Сповіщення запущено, у вас 45 секунд щоб прийти на обговорення, відлік почався...`})
-//додать сповіщення для інших хто саме сповістив про знахідку 
-                            
-                            setTimeout(() => TelegramService.sendMessage({chatId: chat.id, message: `Час вийшов(`}), 3 * 1000)
+
+                            for (let player of players) {
+                                await TelegramService.sendMessage({
+                                    chatId: player.chat_id, 
+                                    message: `${chat.first_name}, `, 
+                                })
+                            }
+                            setTimeout(() => TelegramService.sendMessage({chatId: chat.id, message: `Час вийшов(`}), 45 * 1000)
                             FOUND_BODY = true
                         }
                         
@@ -230,10 +235,11 @@ module.exports = [
                         console.log(players)
                         let result = await assignRoles(players)
                         console.log(result)
-
+                        
+                        let impostorsList = []
                         for (let player of players) {
                             await TelegramService.sendMessage({
-                                chatId: chat.id, 
+                                chatId: player.chat_id, 
                                 message: `${chat.first_name}, в цій грі твоя роль \\-\\ ||${player.role}||`, 
                                 parseMode: 'MarkdownV2',
                                 reply_markup: {
@@ -245,17 +251,16 @@ module.exports = [
                                 },
                             })
 
-                            let impostorsList = []
                             if (player.role === 'Зрадник') {
                                 impostorsList.push(player.name)
                             }
-                            await TelegramService.sendMessage({
-                                chatId: adminChatId, 
-                                message: `Impostors List \\-\\ ||${impostorsList}||`,
-                                parseMode: 'MarkdownV2'
-                            })
-
                         }
+
+                        await TelegramService.sendMessage({
+                            chatId: adminChatId, 
+                            message: `Impostors List \\-\\ ||${impostorsList}||`,
+                            parseMode: 'MarkdownV2'
+                        })
                         
 
                         return { data: false }
@@ -265,7 +270,7 @@ module.exports = [
                         if (commandText === 'End the Game 🧩') {
                             for (let player of players) {
                                 await TelegramService.sendMessage({
-                                    chatId: chat.id,
+                                    chatId: player.chat_id,
                                     message: 'Гру завершено, зіграти ще раз ?',
                                     reply_markup: {
                                         keyboard: [
