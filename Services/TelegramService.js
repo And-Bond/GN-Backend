@@ -26,6 +26,9 @@ const sendMessage = async (payload) => {
         message_thread_id: payload.messageThreadId,
         text: payload.message,
     }
+    if (payload.reply_markup) {
+        request.reply_markup = payload.reply_markup
+    }
     if(payload.parseMode){
         request['parse_mode'] = payload.parseMode
     }
@@ -43,6 +46,15 @@ const editMessage = async (payload) => {
     }
     return api.post('/editMessageText',request)
 }
+
+const deleteMessage = async (payload) => {
+    let request = {
+        chat_id: payload.chatId,
+        message_id: payload.messageId,
+    }
+    return api.post('/deleteMessage', request)
+}
+
 /**
  * 
  * @param {string} chatId 
@@ -132,5 +144,6 @@ module.exports = {
     sendMenuButtons,
     deleteWebhook,
     sendInlineMenuButtons,
-    editMessage
+    editMessage,
+    deleteMessage,
 }

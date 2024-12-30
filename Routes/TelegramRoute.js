@@ -9,6 +9,8 @@ const dotenv = require('dotenv');
 dotenv.config()
 const { GOOGLE_API_KEY } = process.env
 
+let FOUND_BODY = false;
+
 module.exports = [
     {
         method: 'GET',
@@ -72,6 +74,33 @@ module.exports = [
                     return 'Вибачте, але я не розумію, що ви від мене хочете('
                 }
                 switch(commandText){
+                    case '/start': {
+                        const message = await TelegramService.sendMessage({
+                            chatId: chat.id,
+                            message: 'OK',
+                            reply_markup: {
+                                keyboard: [
+                                    ['🚨 Знайдено тіло 🚨'],
+                                ],
+                                resize_keyboard: true,
+                                one_time_keyboard: false, 
+                            },
+                        });
+                    
+                        
+                        /* видалення початкового повідомлення неможливо */
+                        // if (message?.data?.result?.message_id) {
+                        //     const messageId = message.data.result.message_id;
+                        //     await TelegramService.deleteMessage({
+                        //         chatId: chat.id,
+                        //         messageId,
+                        //     });
+                        // }
+                    
+                        return { data: false };
+                    }
+                    
+                    
                     case '/reminder': {
                         const availableScheduledTypesForSend = [
                             Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
@@ -203,39 +232,32 @@ module.exports = [
                     case '/ppNext': {
                         await ProPresenterService.slideNext()
 
-                        await TelegramService.sendMessage(chat.id,`Next slide`)
+                        await TelegramService.sendMessage({chatId: chat.id, message: `Next slide`})
                         return { data: true }
                     }
                     case '/ppPrev': {
                         await ProPresenterService.slidePrev()
 
-                        await TelegramService.sendMessage(chat.id,`Prev slide`)
+                        await TelegramService.sendMessage({chatId: chat.id, message: `Prev slide`})
                         return { data: true }
                     }
-                    case '/found': {
-                        const presentationId = (await ProPresenterService.getActivePresentation()).data.presentation.id.uuid
-                        await ProPresenterService.trgSpecSlide(presentationId, 1)
-                        await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 5 * 1000) // типу після того як знайшли баді, у гравців є 45 секунд щоб прибігти на голосування
-                        
-                        await TelegramService.sendMessage({chatId: chat.id, message: `Сповіщення запущено, відлік почався...`})
+                    case '🚨 Знайдено тіло 🚨': {
+
+                        if (FOUND_BODY === false) {
+                            const presentationId = (await ProPresenterService.getActivePresentation()).data.presentation.id.uuid
+                            await ProPresenterService.trgSpecSlide(presentationId, 1)
+                            await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
+
+                            await TelegramService.sendMessage({chatId: chat.id, message: `Сповіщення запущено, у вас 45 секунд щоб прийти на обговорення, відлік почався...`})
+                            
+                            setTimeout(() => TelegramService.sendMessage({chatId: chat.id, message: `Час вийшов(`}), 3 * 1000)
+                            FOUND_BODY = true
+                        }
+
+                        setTimeout(() => FOUND_BODY = false, 10 * 1000)
                         return { data: false }
                     }
 
-                    case '/sabotage': {
-                        const availableScheduledTypesForSend = [
-                            [{text: 'LED forms', callback_data: 'sabotage_led_type'}],
-                        ]
-                        let payload = {
-                            chatId: chat.id,
-                            message: `Вибери тип нагадування`,
-                            buttons: availableScheduledTypesForSend
-                        }
-                        if(threadId){
-                            payload['messageThreadId'] = threadId
-                        }
-                        await TelegramService.sendInlineMenuButtons(payload)
-                        return { data: true }   
-                    }
                     default: {
                         for (const key in constants.ScheduleServiceTypesHuman) {
                             // Check if it some schedule events type setting
