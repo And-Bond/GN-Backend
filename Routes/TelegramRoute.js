@@ -262,44 +262,46 @@ module.exports = [
                     }
 
                     case 'End the Game 🧩': {
-                        for (let player of players) {
+                        if (commandText === 'End the Game 🧩') {
+                            for (let player of players) {
+                                await TelegramService.sendMessage({
+                                    chatId: chat.id,
+                                    message: 'Гру завершено, зіграти ще раз ?',
+                                    reply_markup: {
+                                        keyboard: [
+                                            ['🎮 Початок гри 🎮'],
+                                        ],
+                                        resize_keyboard: true,
+                                        one_time_keyboard: true, 
+                                    },
+                                });
+                            }
                             await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Гру завершено, зіграти ще раз ?',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
+                                chatId: adminChatId, 
+                                message: `Players list was cleared, you can start the new game`, 
+                            })
+                            players = []
                         }
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId, 
-                            message: `Players list was cleared, you can start the new game`, 
-                        })
-                        players = []
 
                     }
 
 
                     
-                    case '/reminder': {
-                        const availableScheduledTypesForSend = [
-                            Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
-                        ]
-                        let payload = {
-                            chatId: chat.id,
-                            message: `Вибери тип нагадування`,
-                            buttons: availableScheduledTypesForSend
-                        }
-                        if(threadId){
-                            payload['messageThreadId'] = threadId
-                        }
-                        await TelegramService.sendInlineMenuButtons(payload)
-                        return { data: true }
-                    }
+                    // case '/reminder': {
+                    //     const availableScheduledTypesForSend = [
+                    //         Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
+                    //     ]
+                    //     let payload = {
+                    //         chatId: chat.id,
+                    //         message: `Вибери тип нагадування`,
+                    //         buttons: availableScheduledTypesForSend
+                    //     }
+                    //     if(threadId){
+                    //         payload['messageThreadId'] = threadId
+                    //     }
+                    //     await TelegramService.sendInlineMenuButtons(payload)
+                    //     return { data: true }
+                    // }
                     case '/live': {
 
                         const axios = require('axios');
