@@ -420,18 +420,18 @@ module.exports = [
                     //     // await TelegramService.sendMessage(chat.id,`Добренько!`)
                     //     return { data: true }
                     // }
-                    case '/ppNext': {
-                        await ProPresenterService.slideNext()
+                    // case '/ppNext': {
+                    //     await ProPresenterService.slideNext()
 
-                        await TelegramService.sendMessage({chatId: chat.id, message: `Next slide`})
-                        return { data: true }
-                    }
-                    case '/ppPrev': {
-                        await ProPresenterService.slidePrev()
+                    //     await TelegramService.sendMessage({chatId: chat.id, message: `Next slide`})
+                    //     return { data: true }
+                    // }
+                    // case '/ppPrev': {
+                    //     await ProPresenterService.slidePrev()
 
-                        await TelegramService.sendMessage({chatId: chat.id, message: `Prev slide`})
-                        return { data: true }
-                    }
+                    //     await TelegramService.sendMessage({chatId: chat.id, message: `Prev slide`})
+                    //     return { data: true }
+                    // }
 
                     default: {
                         for (const key in constants.ScheduleServiceTypesHuman) {
