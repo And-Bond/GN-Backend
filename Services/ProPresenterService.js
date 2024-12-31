@@ -4,7 +4,7 @@ const axios = require('axios')
 dotenv.config()
 
 
-const path = 'http://192.168.68.215:3005/v1/'
+const path = 'http://192.168.1.172:3005/v1/'
 
 const api = axios.create({
     baseURL: path,
