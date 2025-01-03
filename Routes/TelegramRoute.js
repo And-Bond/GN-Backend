@@ -9,33 +9,14 @@ const dotenv = require('dotenv');
 dotenv.config()
 const { GOOGLE_API_KEY } = process.env
 
-let maxCrewmateCount = 1
-let maxImposterCount = 1
+let maxCrewmateCount = 19
+let maxImposterCount = 0
 let waitingForCrewmateCount = {}
 let waitingForImposterCount = {}
 
 let FOUND_BODY = false;
 
-let playersList = [
-// {
-//     name: "mark",
-//     username: "@mark4121",
-//     chat_id: 695680781,
-//     role: null,
-// },
-// {
-//     name: "mark2",
-//     username: "@mark4121",
-//     chat_id: 695680782,
-//     role: null,
-// },
-// {
-//     name: "mark3",
-//     username: "@mark4121",
-//     chat_id: 695680783,
-//     role: null,
-// }
-]
+let playersList = []
 
 let adminChatId = '695680789'
 function escapeMarkdownV2(str) {
@@ -263,19 +244,34 @@ module.exports = [
                         if (FOUND_BODY === false) {
                             const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
                             await ProPresenterService.trgSpecSlide(presentationId, 1)
-                            await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
+                            // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
                             
                             for (let player of playersList) {
                                 await TelegramService.sendMessage({
                                     chatId: player.chat_id, 
-                                    message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався...`, 
+                                    message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався, ви гусі...`, 
                                 })
+
+                                // let i = 45;
+                                // let interval = setInterval(() => {
+                                //     TelegramService.sendMessage({ chatId: player.chat_id, message: `Залишилось ${i} секунд` });
+                                //     i-=1; 
+                                // }, 1000);
+                                
+                                // setTimeout(() => {
+                                //     clearInterval(interval); 
+                                // }, 45 * 1000);
+                                
+                                // await TelegramService.sendMessage({
+                                //     chatId: player.chat_id, 
+                                //     message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався...`, 
+                                // })
                                 setTimeout(() => TelegramService.sendMessage({chatId: player.chat_id, message: `Час вийшов`}), 45 * 1000)
                             }
                             FOUND_BODY = true
                         }
                         
-                        setTimeout(() => FOUND_BODY = false, 45 * 1000)
+                        setTimeout(() => FOUND_BODY = false, 4 * 1000)
                         return { data: false }
                     }
                     
