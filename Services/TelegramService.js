@@ -2,9 +2,9 @@ const dotenv = require('dotenv')
 const axios = require('axios')
 dotenv.config()
 
-const { TELEGRAM_KEY, TELEGRAM_NY_KEY, NODE_ENV } = process.env
+const { TELEGRAM_KEY, TELEGRAM_PP_KEY, NODE_ENV } = process.env
 
-const telegramPath = 'https://api.telegram.org/bot' + (NODE_ENV !== 'LOCAL' ? TELEGRAM_KEY : TELEGRAM_NY_KEY)
+const telegramPath = 'https://api.telegram.org/bot' + (NODE_ENV !== 'LOCAL' ? TELEGRAM_KEY : TELEGRAM_PP_KEY)
 
 const api = axios.create(
     {

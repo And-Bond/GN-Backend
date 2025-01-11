@@ -9,14 +9,9 @@ const dotenv = require('dotenv');
 dotenv.config()
 const { GOOGLE_API_KEY } = process.env
 
-let maxCrewmateCount = 19
-let maxImposterCount = 0
-let waitingForCrewmateCount = {}
-let waitingForImposterCount = {}
-
-let FOUND_BODY = false;
-
-let playersList = []
+let waitingMessageForAdmin = {}
+let waitingStageMessage = {}
+let stageMode = {}
 
 let adminChatId = '695680789'
 function escapeMarkdownV2(str) {
@@ -92,575 +87,154 @@ module.exports = [
                             message: 'Привіт',
                             reply_markup: {
                                 keyboard: [
-                                    ['🎮 Початок гри 🎮'],
+                                    ['Написати Адміну'],
                                 ],
                                 resize_keyboard: true,
                                 one_time_keyboard: true, 
                             },
                         });
+
                     
                         return { data: false };
                     }
-                    case '/leave': {
-                        if (playersList.find(p => p.chat_id === chat.id)) {
-                            playersList = playersList.filter(p => p.chat_id !== chat.id);
-
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Окей, тебе видалено зі списку гравців',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                            
-                            await TelegramService.sendMessage({
-                                chatId: adminChatId,
-                                message: `${chat.first_name}, leaved the game \ncurrent players list: \n${playersList.length ? playersList.map(p => `\n ${p.name}, ${p.username}`) : 'EMPTY'}\ntotal count - ${playersList.length}`
-                            });
-                            console.log(playersList)
-                        } else {
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Відома помилка',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        }
                     
-                        return { data: false };
-                    }
-
-                    case '🎮 Початок гри 🎮': {
-                        let user = { name: payload?.message?.chat.first_name, username: '@'+from.username, chat_id: payload?.message?.chat.id, role: null }
-                        if (playersList.length < (maxCrewmateCount + maxImposterCount) || playersList.find(p => p.chat_id === user.chat_id)) {
-                            if (!playersList.find(p => p.chat_id === user.chat_id)) {
-                                playersList.push(user)
-                                await TelegramService.sendMessage({
-                                    chatId: chat.id,
-                                    message: `Вітаю, ${chat.first_name} \nчекаємо інших гравців \nскоро ти дізнаєшся свою роль`,
-                                    reply_markup: {
-                                        keyboard: [
-                                            ['💅 Не буду грати 💅'],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: true, 
-                                    },
-                                });
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId, 
-                                    message: `${chat.first_name}, joined to game, \ncurrent players list:\n${playersList.length ? playersList.map(p => `\n - ${p.name} ${p.username}`) : '\nEMPTY'}\n\ntotal count - ${playersList.length}`,reply_markup: {
-                                        keyboard: [
-                                            [{text: 'Give the roles 🎲'}], 
-                                            [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                            [{text: '🚨 Знайдено тіло 🚨'}],
-                                            [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                            [{text: 'End the Game 🧩'}],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: false, 
-                                    },
-                                });                            
-                                console.log(playersList)
-                                return { data: false }    
-                            } else {
-                                await TelegramService.sendMessage({
-                                    chatId: chat.id,
-                                    message: `${chat.first_name}, ти вже береш участь !`,
-                                    reply_markup: {
-                                        keyboard: [
-                                            ['💅 Не буду грати 💅'],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: true, 
-                                    },
-                                });
-                            }
-                        } else {
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'От халепа, всі місця зайняті, доведеться чекати наступну гру...',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        
-                        }
-                        return { data: false }; 
-                    }
-
-                    case '💅 Не буду грати 💅': {
-                        if (playersList.find(p => p.chat_id === chat.id)) {
-                            playersList = playersList.filter(p => p.chat_id !== chat.id);
-
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Окей, тебе видалено зі списку гравців',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                            
-                            await TelegramService.sendMessage({
-                                chatId: adminChatId,
-                                message: `${chat.first_name}, leaved the game \ncurrent players list: \n${playersList.length ? playersList.map(p => `\n ${p.name}, ${p.username}`) : 'EMPTY'}\ntotal count - ${playersList.length}`
-                            });
-                            console.log(playersList)
-                        } else {
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Відома помилка',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        }
-                        
-                        return { data: false };
-                    }
-                    
-                    case '🚨 Знайдено тіло 🚨': {
-                        
-                        if (FOUND_BODY === false) {
-                            const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
-                            await ProPresenterService.trgSpecSlide(presentationId, 1)
-                            // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
-                            
-                            for (let player of playersList) {
-                                await TelegramService.sendMessage({
-                                    chatId: player.chat_id, 
-                                    message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався, ви гусі...`, 
-                                })
-
-                                // let i = 45;
-                                // let interval = setInterval(() => {
-                                //     TelegramService.sendMessage({ chatId: player.chat_id, message: `Залишилось ${i} секунд` });
-                                //     i-=1; 
-                                // }, 1000);
-                                
-                                // setTimeout(() => {
-                                //     clearInterval(interval); 
-                                // }, 45 * 1000);
-                                
-                                // await TelegramService.sendMessage({
-                                //     chatId: player.chat_id, 
-                                //     message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався...`, 
-                                // })
-                                setTimeout(() => TelegramService.sendMessage({chatId: player.chat_id, message: `Час вийшов`}), 45 * 1000)
-                            }
-                            FOUND_BODY = true
-                        }
-                        
-                        setTimeout(() => FOUND_BODY = false, 4 * 1000)
-                        return { data: false }
-                    }
-                    
-                    case '/lolkekadminpanel': {
+                    case 'Написати Адміну': {
                         await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Welcome home sir.',
+                            chatId: chat.id,
+                            message: 'Відправ повідомлення в цей чат',
+                        });
+
+                        waitingMessageForAdmin[chat.id] = true
+                    
+                        return { data: false };
+                    }
+
+                    case '/stage_mode_on': {
+                        await TelegramService.sendMessage({
+                            chatId: chat.id,
+                            message: 'Stage Mode turned on: \nAll next messages will be displayed on Stage Screen',
+                        });
+
+                        stageMode[chat.id] = true
+                    
+                        return { data: false };
+                    }
+                    
+                    case '/stage_mode_off': {
+                        await TelegramService.sendMessage({
+                            chatId: chat.id,
+                            message: 'Stage mode turned off',
+                        });
+
+                        stageMode[chat.id] = false
+                    
+                        return { data: false };
+                    }
+
+                    case '/pp_control': {
+                        await TelegramService.sendMessage({
+                            chatId: chat.id,
+                            message: 'ProPresenter Control Mode',
                             reply_markup: {
                                 keyboard: [
-                                    [{text: 'Give the roles 🎲'}], 
-                                    [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                    [{text: '🚨 Знайдено тіло 🚨'}],
-                                    [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                    [{text: 'End the Game 🧩'}],
+                                    [{ text: 'Prev Slide' }, { text: 'Next Slide' }],
+                                    [{ text: 'By Content' }],
+                                    [{ text: 'Show Stage Message' }]
                                 ],
-                                resize_keyboard: true,
                                 one_time_keyboard: false, 
-                            },
-                        });
-                        
-                        return { data: false }
-                    }
+                            }
+                        });                        
+                    
+                        return { data: false };
+                    }                     
 
-                    case 'Change count' : {
+                    case 'Prev Slide': {
+                        await ProPresenterService.slidePrev()
                         await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Which count you want to change ?',
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: `C: ${maxCrewmateCount} I: ${maxImposterCount}`}],
-                                    [{text: 'Crewmate count'}, {text: 'Imposter count'}], 
-                                    [{text: 'Main menu ↩️'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        });
+                            chatId: chat.id, 
+                            message: 'Prev Slide Clicked'
+                        })
 
                         return { data: false };
-                    }
+                    }                     
 
-                    case 'Crewmate count' : {
+                    case 'Next Slide': {
+                        await ProPresenterService.slideNext()
                         await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Send new count of crewmates ⬇️',
-                        });
-
-                        waitingForCrewmateCount[adminChatId] = true; // Устанавливаем ожидание
-                        return { data: false };
-                    }
-
-                    case 'Imposter count' : {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Send new count of imposters ⬇️',
-                        });
-
-                        waitingForImposterCount[adminChatId] = true; // Устанавливаем ожидание
-                        return { data: false };
-                    }
-
-                    case 'Main menu ↩️' : {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Welcome to admin menu.',
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: 'Give the roles 🎲'}], 
-                                    [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                    [{text: '🚨 Знайдено тіло 🚨'}],
-                                    [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                    [{text: 'End the Game 🧩'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        });
+                            chatId: chat.id, 
+                            message: 'Next Slide Clicked'
+                        })
 
                         return { data: false };
                     }
                     
-                    
-                    case 'Give the roles 🎲': {
-                        if (playersList.length < (maxCrewmateCount + maxImposterCount)) {
-                            await TelegramService.sendMessage({chatId: adminChatId, message: `Not enough players. \ncurrent count - ${playersList.length}\nneed - ${(maxCrewmateCount + maxImposterCount)}`})
-                            return {data: false}
-                        }
-                        function shuffleArray(array) {
-                            for (let i = array.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [array[i], array[j]] = [array[j], array[i]];
-                            }
-                            return array;
-                        }
-
-                        function assignRoles(playersList, numImposters = maxImposterCount) {
-                            let roles = Array(playersList.length - numImposters).fill('Мирний');
-                            roles = roles.concat(Array(numImposters).fill('Зрадник'));
-                            roles = shuffleArray(roles);
-                        
-                            const playerRoles = {};
-                            playersList.forEach((player, index) => {
-                                player.role = roles[index];
-                                console.log(player)
-                            });
-                        
-                            return playerRoles;
-                        }
-                        let result = await assignRoles(playersList)
-                        console.log(result)
-                        
-                        
-                        
-                        let impostersList = []
-                        for (let player of playersList) {
-                            player.name = escapeMarkdownV2(player.name)
-                            console.log(player)
-                            await TelegramService.sendMessage({
-                                chatId: player.chat_id, 
-                                message: `${player.name}, в цій грі твоя роль \\-\\ ||${player.role}||`, 
-                                parseMode: 'MarkdownV2',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🚨 Знайдено тіло 🚨'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: false, 
-                                },
-                            })
-
-                            if (player.role === 'Зрадник') {
-                                impostersList.push(player.name)
-                                console.log(impostersList)
-                            }
-                        }
-
+                    case 'By Content': {
+                        let currentGroups = (await ProPresenterService.getActivePresentation())?.data?.presentation?.groups
+                        currentGroups = currentGroups.map(group => ({text: group.name, callback_data: (group.name.toLowerCase()).split(' ').join('_')}))
                         await TelegramService.sendMessage({
-                            chatId: adminChatId, 
-                            message: `Imposters List \\-\\ ||${impostersList.map(name => name).join(', ')}||`,
-                            parseMode: 'MarkdownV2'
+                            chatId: chat.id, 
+                            message: 'There is groups of current active presentation ⬇️',
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [...currentGroups],
+                                ],
+                                one_time_keyboard: false, 
+                            }
+                        })
+
+                        return {data: false};
+                    }
+                    
+                    case 'Show Stage Message': {
+                        await TelegramService.sendMessage({
+                            chatId: chat.id, 
+                            message: 'Write and send message here ⬇️',
                         })
                         
+                        waitingStageMessage[chat.id] = true
 
-                        return { data: false }
+                        return {data: false};
                     }
 
-                    case 'End the Game 🧩': {
-                        for (let player of playersList) {
-                            await TelegramService.sendMessage({
-                                chatId: player.chat_id,
-                                message: 'Гру завершено, зіграти ще раз ?',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        }
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId, 
-                            message: `Players list was cleared,\nyou can start the new game`, 
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: 'Give the roles 🎲'}], 
-                                    [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                    [{text: '🚨 Знайдено тіло 🚨'}],
-                                    [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                    [{text: 'End the Game 🧩'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        })
-                        playersList = []
-
-                        return { data: false }
-                    }
-
-
-                    
-                    // case '/reminder': {
-                    //     const availableScheduledTypesForSend = [
-                    //         Object.entries(constants.ScheduleServiceTypesHuman).map(([key, name]) => ({text: name, callback_data: key}))
-                    //     ]
-                    //     let payload = {
-                    //         chatId: chat.id,
-                    //         message: `Вибери тип нагадування`,
-                    //         buttons: availableScheduledTypesForSend
-                    //     }
-                    //     if(threadId){
-                    //         payload['messageThreadId'] = threadId
-                    //     }
-                    //     await TelegramService.sendInlineMenuButtons(payload)
-                    //     return { data: true }
-                    // }
-                    // case '/live': {
-
-                    //     const axios = require('axios');
-                    //     const QUERY = 'goodnewssmila';
-
-                    //     async function getChannelId(query) {
-                    //         const url ='https://www.googleapis.com/youtube/v3/search';
-
-                    //         try {
-                    //           const response = await axios.get(url, {
-                    //             params: {
-                    //               part: 'snippet',
-                    //               q: query, // Поиск по никнейму канала
-                    //               type: 'channel',
-                    //               maxResults: 1,
-                    //               key: GOOGLE_API_KEY,
-                    //             },
-                    //           });
-                          
-                    //           if (response.data.items.length > 0) {
-                    //             const channel = response.data.items[0];
-                    //             const channelId = channel.id.channelId;
-                    //             console.log(`Channel ID: ${channelId}`);
-                    //             return channelId;
-                    //           } else {
-                    //             console.log('Канал не найден.');
-                    //             return null;
-                    //           }
-                    //         } catch (error) {
-                    //           console.error('Ошибка при поиске канала:', error.message);
-                    //           return null;
-                    //         }
-                    //     }
-
-                    //     async function getLatestVideo(channelId) {
-                    //         const url = 'https://www.googleapis.com/youtube/v3/search';
-
-                    //         try {
-                    //             const response = await axios.get(url, {
-                    //                 params: {
-                    //                     part: 'snippet',
-                    //                     channelId: channelId,
-                    //                     order: 'date',
-                    //                     maxResults: 1,
-                    //                     type: 'video',
-                    //                     key: GOOGLE_API_KEY,
-                    //                 },
-                    //             });
-
-                    //             if (response.data.items.length > 0) {
-                    //                 const video = response.data.items[0];
-                    //                 const videoId = video.id.videoId;
-                    //                 const videoTitle = video.snippet.title;
-                    //                 const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-
-                    //                 console.log(`Latest Video Title: ${videoTitle}`);
-                    //                 console.log(`Video URL: ${videoUrl}`);
-                    //                 await TelegramService.sendMessage({chatId: chat.id, message: `${videoUrl}`})
-                    //             } else {
-                    //                 console.log('No videos found on the channel.');
-                    //             }
-                    //         } catch (error) {
-                    //             console.error('Error fetching the latest video:', error.message);
-                    //         }
-                    //     }
-
-                    //     async function getLiveStream(CHANNEL_ID) {
-                    //         const url = 'https://www.googleapis.com/youtube/v3/search';
-                          
-                    //         try {
-                    //           const response = await axios.get(url, {
-                    //             params: {
-                    //               part: 'snippet',
-                    //               channelId: CHANNEL_ID,
-                    //               eventType: 'live', // searching livestram only
-                    //               type: 'video',     // video type only
-                    //               maxResults: 1,     // single result
-                    //               key: 'AIzaSyC9QPeYOW_BelCIqVrZXwLrDFzOPIEs0k4',
-                    //             },
-                    //           });
-                          
-                    //           if (response.data.items.length > 0) {
-                    //             const liveVideo = response.data.items[0];
-                    //             const videoId = liveVideo.id.videoId;
-                    //             const videoTitle = liveVideo.snippet.title;
-                    //             const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-                          
-                    //             console.log(`Live Stream Title: ${videoTitle}`);
-                    //             console.log(`Live Stream URL: ${videoUrl}`);
-                    //             await TelegramService.sendMessage({chatId: chat.id, message:`${videoUrl}`})
-                    //             return videoUrl;
-                    //           } else {
-                    //             console.log('Нет активных трансляций на канале.');
-                    //             await TelegramService.sendMessage({chatId: chat.id, message: `Трансляції зараз немає, можу запропонувати останнє відео на каналі`})
-                    //             await getLatestVideo(CHANNEL_ID);
-                    //             return null;
-                    //           }
-                    //         } catch (error) {
-                    //           console.error('Ошибка при поиске лайвстрима:', error.message);
-                    //           return null;
-                    //         }
-                    //     }
-
-                    //     async function main() {
-                    //         const channelId = await getChannelId(QUERY);
-                    //         if (channelId) await getLiveStream(channelId);
-                    //     }
-
-                    //     await main();
-
-                    //     // await TelegramService.sendMessage(chat.id,`Добренько!`)
-                    //     return { data: true }
-                    // }
-                    // case '/ppNext': {
-                    //     await ProPresenterService.slideNext()
-
-                    //     await TelegramService.sendMessage({chatId: chat.id, message: `Next slide`})
-                    //     return { data: true }
-                    // }
-                    // case '/ppPrev': {
-                    //     await ProPresenterService.slidePrev()
-
-                    //     await TelegramService.sendMessage({chatId: chat.id, message: `Prev slide`})
-                    //     return { data: true }
-                    // }
 
                     default: {
-                        if (waitingForCrewmateCount[adminChatId]) {
-                            const playerCount = parseInt(commandText, 10);
-                    
-                            if (playerCount >= 0) {
-                                maxCrewmateCount = playerCount
 
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Crew count set to: ${playerCount}`,
-                                    reply_markup: {
-                                        keyboard: [
-                                            [{text: `C: ${maxCrewmateCount} I: ${maxImposterCount}`}],
-                                            [{text: 'Crewmate count'}, {text: 'Imposter count'}], 
-                                            [{text: 'Main menu ↩️'}],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: false, 
-                                    },
-                                });
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Current game config: \n - total player count ${maxCrewmateCount + maxImposterCount}\n - crewmate ${maxCrewmateCount} \n - imposters ${maxImposterCount}`,
-                                });
-                                waitingForCrewmateCount[adminChatId] = false; 
-                            } else {
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: 'Invalid input. Please send a positive number.',
-                                });
-                            }
-                    
+                        if (stageMode[chat.id]) {
+                            await ProPresenterService.createStageMessage(commandText)
+                            await TelegramService.sendMessage({
+                                chatId: chat.id,
+                                message: '✅ Message was displayed'
+                            });
+                            setTimeout(() => {
+                                ProPresenterService.hideStageMessage()
+                            }, 2000)
+                            return { data: false };
+                        }
+                        
+                        if (waitingMessageForAdmin[chat.id]) {
+                            await TelegramService.sendMessage({
+                                chatId: adminChatId,
+                                message: `[${from.first_name}](https://t.me/@${escapeMarkdownV2(from.username)}): ` + commandText,
+                                parseMode: 'MarkdownV2'
+                            });
+                            waitingMessageForAdmin[chat.id] = false; 
+
                             return { data: false };
                         }
 
-                        if (waitingForImposterCount[adminChatId]) {
-                            const imposterCount = parseInt(commandText, 10);
-                    
-                            if (imposterCount >= 0) {
-                                maxImposterCount = imposterCount
+                        if (waitingStageMessage[chat.id]) {
+                            await ProPresenterService.createStageMessage(commandText)
+                            await TelegramService.sendMessage({
+                                chatId: chat.id,
+                                message: '✅ Message was displayed'
+                            });
+                            
+                            setTimeout(() => {
+                                ProPresenterService.hideStageMessage()
+                            }, 10000)
 
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Imposter count set to: ${maxImposterCount}`,                                    
-                                    reply_markup: {
-                                        keyboard: [
-                                            [{text: `C: ${maxCrewmateCount} I: ${maxImposterCount}`}],
-                                            [{text: 'Crewmate count'}, {text: 'Imposter count'}], 
-                                            [{text: 'Main menu ↩️'}],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: false, 
-                                    },
-                                });
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Current game config: \n - total player count ${maxCrewmateCount + maxImposterCount}\n - crewmate ${maxCrewmateCount} \n - imposters ${maxImposterCount}`,
-                                });
-                                waitingForImposterCount[adminChatId] = false; 
-                            } else {
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: 'Invalid input. Please send a positive number.',
-                                });
-                            }
-                    
+                            waitingStageMessage[chat.id] = false; 
+
                             return { data: false };
                         }
                     

@@ -12,7 +12,7 @@ const api = axios.create({
 
 const slideNext = async () => api.get('trigger/next');
 
-const SlidePrev = async () => api.get('trigger/previous');
+const slidePrev = async () => api.get('trigger/previous');
 
 const mediaNext = async () => api.get('trigger/media/previous');
 
@@ -28,10 +28,13 @@ const getActivePresentation = async () => api.get('presentation/active');
 
 const trgSpecSlide = async (uuid, index) => api.get(`presentation/${uuid}/${index}/trigger`);
 
+const createStageMessage = async (message) => api.put(`stage/message`, message.toString(), { headers: {'Accept': '*/*', 'Content-Type': 'application/json'} });
+
+const hideStageMessage = async () => api.delete(`stage/message`)
 
 module.exports = {
     slideNext,
-    SlidePrev,
+    slidePrev,
     mediaNext,
     mediaPrev,
     audioNext,
@@ -39,4 +42,6 @@ module.exports = {
     getAllGroups,
     getActivePresentation,
     trgSpecSlide,
+    createStageMessage,
+    hideStageMessage,
 };

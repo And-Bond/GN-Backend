@@ -2,7 +2,7 @@ const ngrok = require('ngrok');
 const axios = require('axios');
 require('dotenv').config();
 
-const TELEGRAM_KEY = process.env.NODE_ENV !== 'LOCAL' ? process.env.TELEGRAM_KEY : process.env.TELEGRAM_NY_KEY ; // Store your bot token in a .env file
+const TELEGRAM_KEY = process.env.NODE_ENV !== 'LOCAL' ? process.env.TELEGRAM_KEY : process.env.TELEGRAM_PP_KEY ; // Store your bot token in a .env file
 const API_HOST = process.env.API_HOST || 3000; // Port for your bot server
 
 if (!TELEGRAM_KEY) {
