@@ -7,15 +7,8 @@ const moment = require('moment')
 const ProPresenterService = require('../Services/ProPresenterService')
 const dotenv = require('dotenv');
 dotenv.config()
-const { GOOGLE_API_KEY } = process.env
-
-let maxCrewmateCount = 19
-let maxImposterCount = 0
-let waitingForCrewmateCount = {}
-let waitingForImposterCount = {}
 
 let FOUND_BODY = false;
-
 let playersList = []
 
 let adminChatId = '695680789'
@@ -89,7 +82,7 @@ module.exports = [
                     case '/start': {
                         await TelegramService.sendMessage({
                             chatId: chat.id,
-                            message: 'Привіт',
+                            message: 'Вітаю, для того щоб взяти участь у грі натисни кнопку',
                             reply_markup: {
                                 keyboard: [
                                     ['🎮 Початок гри 🎮'],
@@ -101,155 +94,66 @@ module.exports = [
                     
                         return { data: false };
                     }
-                    case '/leave': {
-                        if (playersList.find(p => p.chat_id === chat.id)) {
-                            playersList = playersList.filter(p => p.chat_id !== chat.id);
-
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Окей, тебе видалено зі списку гравців',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                            
-                            await TelegramService.sendMessage({
-                                chatId: adminChatId,
-                                message: `${chat.first_name}, leaved the game \ncurrent players list: \n${playersList.length ? playersList.map(p => `\n ${p.name}, ${p.username}`) : 'EMPTY'}\ntotal count - ${playersList.length}`
-                            });
-                            console.log(playersList)
-                        } else {
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Відома помилка',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        }
-                    
-                        return { data: false };
-                    }
 
                     case '🎮 Початок гри 🎮': {
-                        let user = { name: payload?.message?.chat.first_name, username: '@'+from.username, chat_id: payload?.message?.chat.id, role: null }
-                        if (playersList.length < (maxCrewmateCount + maxImposterCount) || playersList.find(p => p.chat_id === user.chat_id)) {
-                            if (!playersList.find(p => p.chat_id === user.chat_id)) {
-                                playersList.push(user)
-                                await TelegramService.sendMessage({
-                                    chatId: chat.id,
-                                    message: `Вітаю, ${chat.first_name} \nчекаємо інших гравців \nскоро ти дізнаєшся свою роль`,
-                                    reply_markup: {
-                                        keyboard: [
-                                            ['💅 Не буду грати 💅'],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: true, 
-                                    },
-                                });
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId, 
-                                    message: `${chat.first_name}, joined to game, \ncurrent players list:\n${playersList.length ? playersList.map(p => `\n - ${p.name} ${p.username}`) : '\nEMPTY'}\n\ntotal count - ${playersList.length}`,reply_markup: {
-                                        keyboard: [
-                                            [{text: 'Give the roles 🎲'}], 
-                                            [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                            [{text: '🚨 Знайдено тіло 🚨'}],
-                                            [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                            [{text: 'End the Game 🧩'}],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: false, 
-                                    },
-                                });                            
-                                console.log(playersList)
-                                return { data: false }    
-                            } else {
-                                await TelegramService.sendMessage({
-                                    chatId: chat.id,
-                                    message: `${chat.first_name}, ти вже береш участь !`,
-                                    reply_markup: {
-                                        keyboard: [
-                                            ['💅 Не буду грати 💅'],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: true, 
-                                    },
-                                });
-                            }
-                        } else {
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'От халепа, всі місця зайняті, доведеться чекати наступну гру...',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        
-                        }
+                        let user = { name: payload?.message?.chat.first_name, username: '@'+from.username, chat_id: payload?.message?.chat.id, role: null }       
+                        playersList.push(user)
+                        console.log(playersList)
+
+                        await TelegramService.sendMessage({
+                            chatId: chat.id, 
+                            message: `Вітаю у грі.`,
+                            reply_markup: {
+                                keyboard: [
+                                    [{text: '🚨 Знайдено тіло 🚨'}],
+                                ],
+                                resize_keyboard: true,
+                                one_time_keyboard: false, 
+                            },
+                        });  
+
                         return { data: false }; 
                     }
 
-                    case '💅 Не буду грати 💅': {
-                        if (playersList.find(p => p.chat_id === chat.id)) {
-                            playersList = playersList.filter(p => p.chat_id !== chat.id);
+                    case '/leave': {
+                        playersList = playersList.filter(p => p.chat_id !== chat.id);
 
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Окей, тебе видалено зі списку гравців',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                            
-                            await TelegramService.sendMessage({
-                                chatId: adminChatId,
-                                message: `${chat.first_name}, leaved the game \ncurrent players list: \n${playersList.length ? playersList.map(p => `\n ${p.name}, ${p.username}`) : 'EMPTY'}\ntotal count - ${playersList.length}`
-                            });
-                            console.log(playersList)
-                        } else {
-                            await TelegramService.sendMessage({
-                                chatId: chat.id,
-                                message: 'Відома помилка',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        }
+                        await TelegramService.sendMessage({
+                            chatId: chat.id,
+                            message: 'Окей, тебе видалено зі списку гравців',
+                            reply_markup: {
+                                keyboard: [
+                                    ['🎮 Початок гри 🎮'],
+                                ],
+                                resize_keyboard: true,
+                                one_time_keyboard: true, 
+                            },
+                        });
                         
+                        await TelegramService.sendMessage({
+                            chatId: adminChatId,
+                            message: `${chat.first_name}, leaved the game \ncurrent players list: \n${playersList.length ? playersList.map(p => `\n ${p.name}, ${p.username}`) : '- empty'}\ntotal count - ${playersList.length}`
+                        });
+                    
                         return { data: false };
                     }
                     
                     case '🚨 Знайдено тіло 🚨': {
                         
                         if (FOUND_BODY === false) {
-                            const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
-                            await ProPresenterService.trgSpecSlide(presentationId, 1)
+                            // const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
+                            // await ProPresenterService.trgSpecSlide(presentationId, 1)
                             // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
                             
+                            await TelegramService.sendMessage({
+                                chatId: adminChatId, 
+                                message: `${chat.first_name} знайшов(ла) тіло, \n1 хвилина щоб прийти на місце обговорення`, 
+                            })
+
                             for (let player of playersList) {
                                 await TelegramService.sendMessage({
                                     chatId: player.chat_id, 
-                                    message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався, ви гусі...`, 
+                                    message: `${chat.first_name} знайшов(ла) тіло, \n1 хвилина щоб прийти на місце обговорення`, 
                                 })
 
                                 // let i = 45;
@@ -262,197 +166,15 @@ module.exports = [
                                 //     clearInterval(interval); 
                                 // }, 45 * 1000);
                                 
-                                // await TelegramService.sendMessage({
-                                //     chatId: player.chat_id, 
-                                //     message: `${chat.first_name} знайшов(ла) тіло, \nу вас 45 секунд щоб прийти на місце обговорення \nвідлік почався...`, 
-                                // })
-                                setTimeout(() => TelegramService.sendMessage({chatId: player.chat_id, message: `Час вийшов`}), 45 * 1000)
+                                setTimeout(() => TelegramService.sendMessage({chatId: player.chat_id, message: `Час вийшов`}), 60 * 1000)
                             }
                             FOUND_BODY = true
                         }
                         
-                        setTimeout(() => FOUND_BODY = false, 4 * 1000)
+                        setTimeout(() => FOUND_BODY = false, 2 * 1000)
                         return { data: false }
                     }
                     
-                    case '/lolkekadminpanel': {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Welcome home sir.',
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: 'Give the roles 🎲'}], 
-                                    [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                    [{text: '🚨 Знайдено тіло 🚨'}],
-                                    [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                    [{text: 'End the Game 🧩'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        });
-                        
-                        return { data: false }
-                    }
-
-                    case 'Change count' : {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Which count you want to change ?',
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: `C: ${maxCrewmateCount} I: ${maxImposterCount}`}],
-                                    [{text: 'Crewmate count'}, {text: 'Imposter count'}], 
-                                    [{text: 'Main menu ↩️'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        });
-
-                        return { data: false };
-                    }
-
-                    case 'Crewmate count' : {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Send new count of crewmates ⬇️',
-                        });
-
-                        waitingForCrewmateCount[adminChatId] = true; // Устанавливаем ожидание
-                        return { data: false };
-                    }
-
-                    case 'Imposter count' : {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Send new count of imposters ⬇️',
-                        });
-
-                        waitingForImposterCount[adminChatId] = true; // Устанавливаем ожидание
-                        return { data: false };
-                    }
-
-                    case 'Main menu ↩️' : {
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId,
-                            message: 'Welcome to admin menu.',
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: 'Give the roles 🎲'}], 
-                                    [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                    [{text: '🚨 Знайдено тіло 🚨'}],
-                                    [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                    [{text: 'End the Game 🧩'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        });
-
-                        return { data: false };
-                    }
-                    
-                    
-                    case 'Give the roles 🎲': {
-                        if (playersList.length < (maxCrewmateCount + maxImposterCount)) {
-                            await TelegramService.sendMessage({chatId: adminChatId, message: `Not enough players. \ncurrent count - ${playersList.length}\nneed - ${(maxCrewmateCount + maxImposterCount)}`})
-                            return {data: false}
-                        }
-                        function shuffleArray(array) {
-                            for (let i = array.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [array[i], array[j]] = [array[j], array[i]];
-                            }
-                            return array;
-                        }
-
-                        function assignRoles(playersList, numImposters = maxImposterCount) {
-                            let roles = Array(playersList.length - numImposters).fill('Мирний');
-                            roles = roles.concat(Array(numImposters).fill('Зрадник'));
-                            roles = shuffleArray(roles);
-                        
-                            const playerRoles = {};
-                            playersList.forEach((player, index) => {
-                                player.role = roles[index];
-                                console.log(player)
-                            });
-                        
-                            return playerRoles;
-                        }
-                        let result = await assignRoles(playersList)
-                        console.log(result)
-                        
-                        
-                        
-                        let impostersList = []
-                        for (let player of playersList) {
-                            player.name = escapeMarkdownV2(player.name)
-                            console.log(player)
-                            await TelegramService.sendMessage({
-                                chatId: player.chat_id, 
-                                message: `${player.name}, в цій грі твоя роль \\-\\ ||${player.role}||`, 
-                                parseMode: 'MarkdownV2',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🚨 Знайдено тіло 🚨'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: false, 
-                                },
-                            })
-
-                            if (player.role === 'Зрадник') {
-                                impostersList.push(player.name)
-                                console.log(impostersList)
-                            }
-                        }
-
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId, 
-                            message: `Imposters List \\-\\ ||${impostersList.map(name => name).join(', ')}||`,
-                            parseMode: 'MarkdownV2'
-                        })
-                        
-
-                        return { data: false }
-                    }
-
-                    case 'End the Game 🧩': {
-                        for (let player of playersList) {
-                            await TelegramService.sendMessage({
-                                chatId: player.chat_id,
-                                message: 'Гру завершено, зіграти ще раз ?',
-                                reply_markup: {
-                                    keyboard: [
-                                        ['🎮 Початок гри 🎮'],
-                                    ],
-                                    resize_keyboard: true,
-                                    one_time_keyboard: true, 
-                                },
-                            });
-                        }
-                        await TelegramService.sendMessage({
-                            chatId: adminChatId, 
-                            message: `Players list was cleared,\nyou can start the new game`, 
-                            reply_markup: {
-                                keyboard: [
-                                    [{text: 'Give the roles 🎲'}], 
-                                    [{text: '🎮 Початок гри 🎮'}, {text: '💅 Не буду грати 💅'}],
-                                    [{text: '🚨 Знайдено тіло 🚨'}],
-                                    [{text: `Crew: ${maxCrewmateCount} Imps: ${maxImposterCount}`}, {text: 'Change count'}],
-                                    [{text: 'End the Game 🧩'}],
-                                ],
-                                resize_keyboard: true,
-                                one_time_keyboard: false, 
-                            },
-                        })
-                        playersList = []
-
-                        return { data: false }
-                    }
-
-
                     
                     // case '/reminder': {
                     //     const availableScheduledTypesForSend = [
@@ -595,75 +317,7 @@ module.exports = [
                     //     return { data: true }
                     // }
 
-                    default: {
-                        if (waitingForCrewmateCount[adminChatId]) {
-                            const playerCount = parseInt(commandText, 10);
-                    
-                            if (playerCount >= 0) {
-                                maxCrewmateCount = playerCount
-
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Crew count set to: ${playerCount}`,
-                                    reply_markup: {
-                                        keyboard: [
-                                            [{text: `C: ${maxCrewmateCount} I: ${maxImposterCount}`}],
-                                            [{text: 'Crewmate count'}, {text: 'Imposter count'}], 
-                                            [{text: 'Main menu ↩️'}],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: false, 
-                                    },
-                                });
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Current game config: \n - total player count ${maxCrewmateCount + maxImposterCount}\n - crewmate ${maxCrewmateCount} \n - imposters ${maxImposterCount}`,
-                                });
-                                waitingForCrewmateCount[adminChatId] = false; 
-                            } else {
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: 'Invalid input. Please send a positive number.',
-                                });
-                            }
-                    
-                            return { data: false };
-                        }
-
-                        if (waitingForImposterCount[adminChatId]) {
-                            const imposterCount = parseInt(commandText, 10);
-                    
-                            if (imposterCount >= 0) {
-                                maxImposterCount = imposterCount
-
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Imposter count set to: ${maxImposterCount}`,                                    
-                                    reply_markup: {
-                                        keyboard: [
-                                            [{text: `C: ${maxCrewmateCount} I: ${maxImposterCount}`}],
-                                            [{text: 'Crewmate count'}, {text: 'Imposter count'}], 
-                                            [{text: 'Main menu ↩️'}],
-                                        ],
-                                        resize_keyboard: true,
-                                        one_time_keyboard: false, 
-                                    },
-                                });
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: `Current game config: \n - total player count ${maxCrewmateCount + maxImposterCount}\n - crewmate ${maxCrewmateCount} \n - imposters ${maxImposterCount}`,
-                                });
-                                waitingForImposterCount[adminChatId] = false; 
-                            } else {
-                                await TelegramService.sendMessage({
-                                    chatId: adminChatId,
-                                    message: 'Invalid input. Please send a positive number.',
-                                });
-                            }
-                    
-                            return { data: false };
-                        }
-                    
+                    default: {                    
                         for (const key in constants.ScheduleServiceTypesHuman) {
                             // Check if it some schedule events type setting
                             if(key === commandText){
