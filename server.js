@@ -2,7 +2,21 @@
 
 const Hapi = require('@hapi/hapi');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+
+const ytdl = require('ytdl-core');
+const fs = require('fs');
+
+
+ytdl('https://youtu.be/dQw4w9WgXcQ?si=h6t1gYmN1rVyM6AD', {
+filter: (format) => format.container === 'mp4' && format.audioBitrate,
+quality: 'highest',
+})
+.pipe(fs.createWriteStream('video-highest.mp4'))
+.on('finish', () => {
+    console.log('Video downloaded (highest quality MP4).');
+});
+
 dotenv.config()
 
 const cronJob = require('./Other/CronJob')
@@ -13,6 +27,8 @@ const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = pr
 const routes = require('./Routes/index')
 
 const { setWebhook } = require('./Services/TelegramService')
+
+
 
 const init = async () => {
     // Create a new Hapi server instance
