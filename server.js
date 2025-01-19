@@ -4,18 +4,93 @@ const Hapi = require('@hapi/hapi');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
+// ytdl('https://youtu.be/dQw4w9WgXcQ?si=h6t1gYmN1rVyM6AD')
+// .pipe(fs.createWriteStream('video-highest.mp4'))
+// .on('finish', () => {
+//     console.log('Video downloaded (highest quality MP4).');
+// });
+// ytdl("https://youtu.be/dQw4w9WgXcQ?si=h6t1gYmN1rVyM6AD", {
+//     filter: (format) => format.container === 'mp4'
+// }).pipe(require("fs").createWriteStream("video.mp4"));
+
+
 const ytdl = require('ytdl-core');
 const fs = require('fs');
+const { exec } = require('child_process');
 
+const videoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley'; // Replace with your desired video URL
+const videoOutput = 'video.mp4';
+const audioOutput = 'audio.mp3';
+const finalOutput = 'output.mp4';
 
-ytdl('https://youtu.be/dQw4w9WgXcQ?si=h6t1gYmN1rVyM6AD', {
-filter: (format) => format.container === 'mp4' && format.audioBitrate,
-quality: 'highest',
-})
-.pipe(fs.createWriteStream('video-highest.mp4'))
-.on('finish', () => {
-    console.log('Video downloaded (highest quality MP4).');
-});
+// Download video stream
+// function downloadVideo() {
+//   console.log('Downloading video...');
+//   return new Promise((resolve, reject) => {
+//     const videoStream = ytdl(videoUrl, {
+//       filter: (format) => format.container === 'mp4' && !format.audioBitrate,
+//     }).pipe(fs.createWriteStream(videoOutput));
+
+//     videoStream.on('finish', () => {
+//       console.log('Video downloaded.');
+//       resolve();
+//     });
+
+//     videoStream.on('error', (err) => {
+//       console.error('Error downloading video:', err);
+//       reject(err);
+//     });
+//   });
+// }
+
+// Download audio stream
+function downloadAudio() {
+  console.log('Downloading audio...');
+  return new Promise((resolve, reject) => {
+    const audioStream = ytdl(videoUrl, {
+    //   filter: 'audioonly',
+    }).pipe(fs.createWriteStream(audioOutput));
+
+    audioStream.on('finish', () => {
+      console.log('Audio downloaded.');
+      resolve();
+    });
+
+    audioStream.on('error', (err) => {
+      console.error('Error downloading audio:', err);
+      reject(err);
+    });
+  });
+}
+
+// Merge video and audio using ffmpeg
+function mergeVideoAndAudio() {
+  console.log('Merging video and audio...');
+  return new Promise((resolve, reject) => {
+    const ffmpegCommand = `ffmpeg -i ${videoOutput} -i ${audioOutput} -c:v copy -c:a aac ${finalOutput}`;
+    exec(ffmpegCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error merging video and audio:', error.message);
+        reject(error);
+      } else {
+        console.log('Video and audio merged successfully!');
+        console.log(`Final file: ${finalOutput}`);
+        resolve();
+      }
+    });
+  });
+}
+
+// Execute the process in sequence
+(async function () {
+  try {
+    // await downloadVideo();
+    await downloadAudio();
+    await mergeVideoAndAudio();
+  } catch (err) {
+    console.error('An error occurred:', err);
+  }
+})();
 
 dotenv.config()
 
