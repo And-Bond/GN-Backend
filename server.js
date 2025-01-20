@@ -5,14 +5,16 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose')
 dotenv.config()
 
+// Init Cron
 const cronJob = require('./Other/CronJob')
-const handelbars = require('./Templates/HandelBars')
+cronJob
 
 const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = process.env
 
 const routes = require('./Routes/index')
 
-const { setWebhook } = require('./Services/TelegramService')
+const { GNBot } = require('./Other/TelegramBots');
+
 
 const init = async () => {
     // Create a new Hapi server instance
@@ -55,10 +57,10 @@ const init = async () => {
     let mongoRes = await mongoose.connect(MONGODB_PATH)
     console.log('MongoDB Connected!',mongoRes?.connections?.[0]?._connectionString || '')
     // Setting webhook path to telegram bot once deployed
-    if(NODE_ENV === 'PROD'){
-        await setWebhook(API_PATH + '/telegram')
-        console.log('Telegram Webhook set to ',API_PATH + '/telegram')
-    }
+    // if(NODE_ENV === 'PROD'){
+    //     GNBot.setWebHook(API_PATH + '/telegram')
+    //     console.log('Telegram Webhook set to ',API_PATH + '/telegram')
+    // }
 };
 
 // Handle any errors when starting the server

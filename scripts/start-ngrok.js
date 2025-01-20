@@ -10,18 +10,18 @@ if (!TELEGRAM_KEY) {
   process.exit(1);
 }
 
+const { GNBot } = require('../Other/TelegramBots');
+
 (async function () {
   try {
     // Start ngrok on the specified port
     const url = await ngrok.connect(API_HOST);
+    const webhookUrl = url + '/telegram'
     console.log(`ngrok tunnel started at: ${url}`);
 
-    // Set Telegram Webhook
-    const webhookUrl = `${url}/telegram`;
-    const telegramApiUrl = `https://api.telegram.org/bot${TELEGRAM_KEY}/setWebhook`;
-    const response = await axios.post(telegramApiUrl, { url: webhookUrl });
+    const response = await GNBot.setWebHook(webhookUrl)
 
-    console.log(`Webhook set successfully: ${response.data.description}`);
+    console.log(`Webhook set successfully: ${response}`);
     console.log(`Your Webhook URL: ${webhookUrl}`);
   } catch (error) {
     console.error('Error starting ngrok or setting Webhook:', error.message);
