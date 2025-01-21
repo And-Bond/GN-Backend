@@ -4,6 +4,7 @@ require('dotenv').config();
 const { TELEGRAM_KEY, NODE_ENV, RAILWAY_PUBLIC_DOMAIN: API_PATH} = process.env
 const API_HOST = process.env.API_HOST || 3000; // Port for your bot server
 const ngrok = require('ngrok');
+const constants = require('./constants')
 
 const GNBot = new TelegramBot(TELEGRAM_KEY, { webHook: true });
 
@@ -23,9 +24,44 @@ const initTelegramBot = async () => {
   console.log('Telegram Webhook set to:', webhookUrl);
 };
 
+const canReactOnMessage = (payload) => {
+  // For now we work only when user or send message or clicking callback button
+  if(!payload.message && !payload.callback_query){
+    return false
+  }
+
+  let message;
+  let chat;
+  switch(true){
+    case !!payload.message: {
+      message = payload.message.text
+      chat = payload.message.chat
+      break
+    }
+    case !!payload.callback_query: {
+      message = payload.callback_query.data
+      chat = payload.callback_query.message.chat
+      break
+    }
+  }
+
+  if(!message || !chat){
+    return false
+  }
+
+  if((chat.type === 'group' || chat.type === 'supergroup') && (!message.includes(constants.BotName) && !payload.callback_query)){
+    return false
+  }else{
+    message = message.replaceAll(constants.BotName, '')
+  }
+
+  return payload
+}
+
 // Step 3: Initialize the bot and webhook
 initTelegramBot().catch((err) => console.error('Error initializing bot:', err));
 
 module.exports = {
-    GNBot: GNBot
+    GNBot: GNBot,
+    canReactOnMessage: canReactOnMessage
 }
