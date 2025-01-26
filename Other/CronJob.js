@@ -1,7 +1,7 @@
 const cron = require('node-cron'),
     constants = require('../Other/constants'),
     fs = require('fs'),
-    handlebars = require('handlebars'),
+    handlebars = require('../Templates/HandelBars'),
     path = require('path'),
     moment = require('moment')
 
@@ -64,7 +64,11 @@ const check = async () => {
     
             for(let schedule of sundayService){
                 try{
-                    await TelegramService.sendMessage(schedule.chatId, message, { parse_mode: 'HTML' })
+                    let payload = { chatId: schedule.chatId, message, parseMode: 'HTML' }
+                    if(schedule.threadId){
+                        payload['messageThreadId'] = schedule.threadId
+                    }
+                    await TelegramService.sendMessage(payload)
                     // Hard code every thursday
                     const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
                     if(moment().utc().isAfter(nextTimeSchedule)){
