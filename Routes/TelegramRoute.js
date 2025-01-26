@@ -120,7 +120,7 @@ module.exports = [
 
                         await TelegramService.sendMessage({
                             chatId: chat.id,
-                            message: 'Окей, тебе видалено зі списку гравців',
+                            message: 'Окей, тебе видалено зі списку гравців, гусь',
                             reply_markup: {
                                 keyboard: [
                                     ['🎮 Початок гри 🎮'],
@@ -141,19 +141,19 @@ module.exports = [
                     case '🚨 Знайдено тіло 🚨': {
                         
                         if (FOUND_BODY === false) {
-                            // const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
-                            // await ProPresenterService.trgSpecSlide(presentationId, 1)
+                            const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
+                            await ProPresenterService.trgSpecSlide(presentationId, 1)
                             // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
                             
                             await TelegramService.sendMessage({
                                 chatId: adminChatId, 
-                                message: `${chat.first_name} знайшов(ла) тіло, \n1 хвилина щоб прийти на місце обговорення`, 
+                                message: `${chat.first_name} знайшов(ла) тіло, \n45 секунд щоб прийти на місце обговорення`, 
                             })
 
                             for (let player of playersList) {
                                 await TelegramService.sendMessage({
                                     chatId: player.chat_id, 
-                                    message: `${chat.first_name} знайшов(ла) тіло, \n1 хвилина щоб прийти на місце обговорення`, 
+                                    message: `${chat.first_name} знайшов(ла) тіло, \n45 секунд щоб прийти на місце обговорення`, 
                                 })
 
                                 // let i = 45;
@@ -166,12 +166,14 @@ module.exports = [
                                 //     clearInterval(interval); 
                                 // }, 45 * 1000);
                                 
-                                setTimeout(() => TelegramService.sendMessage({chatId: player.chat_id, message: `Час вийшов`}), 60 * 1000)
+                                setTimeout(() => TelegramService.sendMessage({chatId: player.chat_id, message: `Час вийшов`}), 45 * 1000)
                             }
-                            FOUND_BODY = true
+                            if(playersList?.length){
+                                FOUND_BODY = true
+                            }
                         }
                         
-                        setTimeout(() => FOUND_BODY = false, 2 * 1000)
+                        setTimeout(() => FOUND_BODY = false, 3 * 10000)
                         return { data: false }
                     }
                     
@@ -372,6 +374,7 @@ module.exports = [
                         }
                         return { data: true }
                     }
+                    return true
                 }
             } catch (error) {
                 console.log('ROUTE ERROR',error)
