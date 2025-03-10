@@ -1,18 +1,9 @@
 [phases]
 [phases.setup]
-# Install dependencies needed for the project
-cmds = ["npm install"]
-
-[phases.build]
-# Since this is a Node.js app, there's no explicit build step required. This is optional.
+cmds = ["npm install -g pm2", "npm install"]
 
 [phases.start]
-# The command to start your application
-cmd = "npm start"
+cmd = "npm run start:prod"
 
 [environment]
-# Add environment variables if necessary (like NODE_ENV)
 NODE_ENV = "production"
-
-[static]
-# Add static file paths if you serve them from the backend (optional)
