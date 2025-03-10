@@ -14,6 +14,7 @@ const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = pr
 const routes = require('./Routes/index')
 
 const { GNBot, initTelegramBot } = require('./Other/TelegramBots');
+const { registerAuth } = require('./Other/auth');
 
 
 const init = async () => {
@@ -22,6 +23,9 @@ const init = async () => {
         port: API_HOST,        // Set the port
         host: NODE_ENV === 'LOCAL' ? API_PATH : '0.0.0.0', // Set the host
     });
+
+    // Register all plugins
+    registerAuth(server)
     
     // Basic route: Responds with "Hello, Hapi!" when accessed via GET
     server.route({

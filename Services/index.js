@@ -4,5 +4,6 @@ module.exports = {
     TelegramService: require('./TelegramService'),
     TelegramUserService: require('./TelegramUserService'),
     ScheduleEventsService: require('./ScheduleEventsService'),
-    PlanningCenterService: require('./PlanningCenterService')
+    PlanningCenterService: require('./PlanningCenterService'),
+    AuthTokenService: require('./AuthTokenService')
 }
