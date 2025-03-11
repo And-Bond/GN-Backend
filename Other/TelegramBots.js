@@ -10,6 +10,8 @@ const GNBot = new TelegramBot(TELEGRAM_KEY, { webHook: true });
 
 // Dev dependencies
 let ngrok;
+console.log('NODE_ENV:', NODE_ENV);
+
 if(NODE_ENV !== 'PROD'){
   console.log('Installing ngrok')
   ngrok = require('ngrok');
