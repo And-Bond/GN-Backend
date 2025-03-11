@@ -3,4 +3,4 @@
 cmds = ["npm install -g pm2", "npm install"]
 
 [phases.start]
-cmd = "npm run start:prod"
+cmd = "npm run prod"

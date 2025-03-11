@@ -2,11 +2,11 @@
   "name": "gn-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
     "start:ngrok": "node scripts/start-ngrok.js",
-    "start:prod": "pm2-runtime start server.js --name myapp"
+    "prod": "pm2-runtime start server.js --name gn-backend"
   },
   "keywords": [],
   "author": "",
