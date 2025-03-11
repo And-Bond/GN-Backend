@@ -14,34 +14,47 @@ if(NODE_ENV !== 'PROD'){
   ngrok = require('ngrok');
 }
 
-const initTelegramBot = async () => {
-  try {
-    let webhookUrl = API_PATH;
-    // Step 1: Check if we are in production or development
-    if (NODE_ENV !== 'PROD') {
-      console.log('Starting ngrok for development...');
-      const data = await axios.get('http://localhost:4040/api/tunnels'); // Use your port
+// Error counter
+let errorCounter = 0
+
+const start = async() => {
+  let webhookUrl = API_PATH;
+  // Step 1: Check if we are in production or development
+  if (NODE_ENV !== 'PROD') {
+    console.log('Starting ngrok for development...');
+   await axios.get(`http://localhost:4040/api/tunnels`)
+   .then(async(data) => {
       if(data?.data?.tunnels?.length){
         const tunnel = data.data.tunnels[0];
         webhookUrl = tunnel.public_url;
       }else{
-        webhookUrl = await ngrok.connect(API_HOST); // Use your port
+        webhookUrl = await ngrok.connect(API_HOST);
       }
-      console.log('Ngrok URL:', webhookUrl);
-    }
-  
-    // Step 2: Set the webhook URL dynamically
-    webhookUrl += '/telegram';
-    await GNBot.setWebHook(webhookUrl);
-    console.log('Telegram Webhook set to:', webhookUrl);
-  } catch (error) {
-    let webhookUrl = API_PATH;
-    if(NODE_ENV !== 'PROD'){
+    })
+    .catch(async(error) => {
       webhookUrl = await ngrok.connect(API_HOST);
+    })
+
+    console.log('Ngrok URL:', webhookUrl);
+  }
+
+  // Step 2: Set the webhook URL dynamically
+  webhookUrl += '/telegram';
+  await GNBot.setWebHook(webhookUrl);
+  console.log('Telegram Webhook set to:', webhookUrl);
+}
+
+const initTelegramBot = async () => {
+  try {
+    await start()
+  } catch (error) {
+    console.error('Error starting Telegram Bot:', error.message || error.errors);
+    errorCounter++
+    if(errorCounter > 3){
+      console.error('Failed to start Telegram Bot after 3 attempts. Last known error:', error.message || error.errors);
+      return
     }
-    webhookUrl += '/telegram';
-    await GNBot.setWebHook(webhookUrl);
-    console.log('Telegram Webhook set to:', webhookUrl);
+    await initTelegramBot()
   }
 };
 
