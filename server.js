@@ -13,8 +13,8 @@ const { initTelegramBot } = require('./Other/TelegramBots');
 
 
 const init = async () => {
-    
-    console.log('Starting server, current ENV: ', NODE_ENV)
+
+    console.log('Starting server, current ENV:',NODE_ENV)
 
     // Create a new Hapi server instance
     const server = Hapi.server({
