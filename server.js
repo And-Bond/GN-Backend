@@ -5,15 +5,11 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose')
 dotenv.config()
 
-// Init Cron
-const cronJob = require('./Other/CronJob')
-cronJob
-
 const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = process.env
 
 const routes = require('./Routes/index')
 
-const { GNBot, initTelegramBot } = require('./Other/TelegramBots');
+const { initTelegramBot } = require('./Other/TelegramBots');
 
 
 const init = async () => {
@@ -54,16 +50,16 @@ const init = async () => {
     await server.start();
     console.log('Server Started, current ENV: ', NODE_ENV)
     console.log('Server running on %s', server.info.uri);
+    
     // Conecting to mongoDb
     let mongoRes = await mongoose.connect(MONGODB_PATH)
     console.log('MongoDB Connected!',mongoRes?.connections?.[0]?._connectionString || '')
+
     // Init Telegram Bot
     await initTelegramBot()
-    // Setting webhook path to telegram bot once deployed
-    // if(NODE_ENV === 'PROD'){
-    //     GNBot.setWebHook(API_PATH + '/telegram')
-    //     console.log('Telegram Webhook set to ',API_PATH + '/telegram')
-    // }
+
+    // Init Cron
+    require('./Other/CronJob')
 };
 
 // Handle any errors when starting the server
