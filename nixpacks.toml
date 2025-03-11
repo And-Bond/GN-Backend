@@ -2,5 +2,5 @@
 [phases.setup]
 cmds = ["npm install -g pm2", "npm install"]
 
-[phases.start]
+[start]
 cmd = "npm run prod"
