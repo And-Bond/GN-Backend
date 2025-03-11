@@ -52,6 +52,7 @@ const init = async () => {
 
     // Start the server
     await server.start();
+    console.log('Server Started, current ENV: ', NODE_ENV)
     console.log('Server running on %s', server.info.uri);
     // Conecting to mongoDb
     let mongoRes = await mongoose.connect(MONGODB_PATH)
