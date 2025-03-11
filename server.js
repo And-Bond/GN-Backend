@@ -13,6 +13,9 @@ const { initTelegramBot } = require('./Other/TelegramBots');
 
 
 const init = async () => {
+    
+    console.log('Starting server, current ENV: ', NODE_ENV)
+
     // Create a new Hapi server instance
     const server = Hapi.server({
         port: API_HOST,        // Set the port
@@ -46,7 +49,6 @@ const init = async () => {
     
     server.route(routes)
 
-    console.log('Starting server, current ENV: ', NODE_ENV)
 
     // Start the server
     await server.start();
