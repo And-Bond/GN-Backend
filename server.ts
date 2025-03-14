@@ -1,0 +1,82 @@
+'use strict';
+
+import Hapi from '@hapi/hapi';
+import mongoose from 'mongoose';
+import Boom from '@hapi/boom';
+
+const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = process.env;
+
+import routes from '@Routes';
+import { initTelegramBot } from '@app/Other/TelegramBots.js';
+import { registerAuth } from '@app/Other/auth.js';
+
+
+
+const init = async () => {
+
+    console.log('Starting server, current ENV:',NODE_ENV)
+
+    // Create a new Hapi server instance
+    const server = Hapi.server({
+        port: API_HOST,        // Set the port
+        host: NODE_ENV === 'LOCAL' ? API_PATH : '0.0.0.0', // Set the host
+    });
+
+    // Register all plugins
+    registerAuth(server)
+    
+    // Basic route: Responds with "Hello, Hapi!" when accessed via GET
+    server.route({
+        method: 'GET',
+        path: '/',
+        handler: (request, h) => {
+            return 'GN Backed is working good';
+        }
+    });
+
+    server.ext('onRequest', (request, h) => {
+        console.log(`Incoming Request: ${request.method.toUpperCase()} ${request.path}`);
+        return h.continue;
+    });
+
+    // Log after the response is sent
+    server.ext('onPreResponse', (request, h) => {
+        const response = request.response;
+        
+        // Type guard to check if the response is an instance of Boom
+        if (Boom.isBoom(response)) {
+            console.error(`${response.output.statusCode} ${response.output.payload.message}`);
+        } else {
+            console.log(`Response to Request: ${request.method.toUpperCase()} ${request.path} ${response.statusCode}`);
+        }
+        
+        return h.continue;
+    })
+    
+    server.route(routes)
+
+
+    // Start the server
+    await server.start();
+    console.log('Server running on %s', server.info.uri);
+
+    // Conecting to mongoDb
+    let mongoRes = await mongoose.connect(MONGODB_PATH)
+    console.log('MongoDB Connected!',mongoRes?.connections?.[0]?.host + ':' + mongoRes?.connections?.[0]?.port + '/' + mongoRes?.connections?.[0]?.name || '')
+
+    // Init Telegram Bot
+    await initTelegramBot()
+
+    // Init Cron
+    require('./Other/CronJob')
+};
+
+// Handle any errors when starting the server
+process.on('unhandledRejection', (err) => {
+    console.log(err);
+    process.exit(1);
+});
+
+// Initialize the server
+init()
+console.log('Release Date: ', Date.now()) 

@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "nodemon --watch 'src/**/*.ts' --loader ts-node/esm --exec nodemon dist/server.js",
     "start:ngrok": "node scripts/start-ngrok.js",
-    "prod": "pm2-runtime start server.js --name gn-backend"
+    "prod": "pm2-runtime start dist/server.js --name gn-backend"
   },
   "keywords": [],
   "author": "",
@@ -25,14 +25,23 @@
     "mongoose": "^8.8.0",
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0",
-    "pm2": "^5.4.3"
+    "pm2": "^5.4.3",
+    "typescript": "^5.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.13.10",
+    "@types/node-telegram-bot-api": "^0.64.7",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
     "dotenv-cli": "^7.4.4",
     "eslint": "^9.14.0",
     "globals": "^15.12.0",
     "ngrok": "^5.0.0-beta.2",
-    "nodemon": "^3.1.7"
-  }
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.1"
+  },
+  "type": "module"
 }
