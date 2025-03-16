@@ -1,4 +1,4 @@
-import AccountModel from '@app/Models/AccountModel.js'
+import AccountModel from '../Models/AccountModel.js'
 const getById = (id) => {
     return AccountModel.findById(id)
 }

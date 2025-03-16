@@ -6,9 +6,9 @@ import Boom from '@hapi/boom';
 
 const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = process.env;
 
-import routes from '@Routes';
-import { initTelegramBot } from '@app/Other/TelegramBots.js';
-import { registerAuth } from '@app/Other/auth.js';
+import routes from './Routes/index.js';
+import { initTelegramBot } from './Other/TelegramBots.js';
+import { registerAuth } from './Other/auth.js';
 
 
 
@@ -23,7 +23,7 @@ const init = async () => {
     });
 
     // Register all plugins
-    registerAuth(server)
+    await registerAuth(server)
     
     // Basic route: Responds with "Hello, Hapi!" when accessed via GET
     server.route({
@@ -68,7 +68,7 @@ const init = async () => {
     await initTelegramBot()
 
     // Init Cron
-    require('./Other/CronJob')
+    await import('./Other/CronJob.js')
 };
 
 // Handle any errors when starting the server

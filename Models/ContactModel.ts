@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 const Schema = mongoose.Schema
 const ObjectId = mongoose.Types.ObjectId
-import constants from "@app/Other/constants.js"
+import constants from "../Other/constants.js"
 
 const Contact = new Schema({
     name: {

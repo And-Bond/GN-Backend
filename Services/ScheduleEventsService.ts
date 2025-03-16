@@ -1,4 +1,4 @@
-import ScheduleEventsModel from '@app/Models/ScheduleEventsModel.js'
+import ScheduleEventsModel from '../Models/ScheduleEventsModel.js'
 
 const getById = (id) => {
     return ScheduleEventsModel.findById(id)

@@ -1,7 +1,7 @@
 import ngrok from 'ngrok';
 
 const TELEGRAM_KEY = process.env.TELEGRAM_KEY; // Store your bot token in a .env file
-const API_HOST = process.env.API_HOST || 3000; // Port for your bot server
+const API_HOST = Number(process.env.API_HOST) || 3000; // Port for your bot server
 
 if (!TELEGRAM_KEY) {
   console.error('TELEGRAM_KEY is not set in .env file');

@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon --watch 'src/**/*.ts' --loader ts-node/esm --exec nodemon dist/server.js",
+    "start:ts": "tsc --watch",
+    "start": "copyfiles -u 1 \"Templates/**/*.html\" dist/Templates && nodemon -r dotenv/config dist/server.js",
     "start:ngrok": "node scripts/start-ngrok.js",
     "prod": "pm2-runtime start dist/server.js --name gn-backend"
   },
@@ -17,6 +18,7 @@
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "handlebars": "^4.7.8",
+    "hapi-auth-jwt2": "^11.0.0",
     "joi": "^17.13.3",
     "joi-objectid": "^4.0.2",
     "jsonwebtoken": "^9.0.2",
@@ -26,6 +28,7 @@
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0",
     "pm2": "^5.4.3",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.2"
   },
   "devDependencies": {
@@ -36,6 +39,8 @@
     "@types/node-telegram-bot-api": "^0.64.7",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
+    "concurrently": "^9.1.2",
+    "copyfiles": "^2.4.1",
     "dotenv-cli": "^7.4.4",
     "eslint": "^9.14.0",
     "globals": "^15.12.0",

@@ -1,8 +1,8 @@
 import Joi from 'joi'
 import joiObjectId from 'joi-objectid'
 (Joi as any).objectId = joiObjectId(Joi)
-import UnFx from '@app/Other/UniversalFunctions.js'
-import AdminLoginController from '@app/Controllers/AdminLoginController.js'
+import UnFx from '../Other/UniversalFunctions.js'
+import AdminLoginController from '../Controllers/AdminLoginController.js'
 
 export default [
     {

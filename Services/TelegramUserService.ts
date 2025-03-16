@@ -1,4 +1,4 @@
-import TelegramUsersModel from '@app/Models/TelegramUserModel.js'
+import TelegramUsersModel from '../Models/TelegramUserModel.js'
 
 const getById = (id) => {
     return TelegramUsersModel.findById(id)

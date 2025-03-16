@@ -1,4 +1,4 @@
-import ContactModel from '@app/Models/ContactModel.js'
+import ContactModel from '../Models/ContactModel.js'
 
 const getById = (id) => {
     return ContactModel.findById(id)

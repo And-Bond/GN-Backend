@@ -1,4 +1,4 @@
-import { GNBot } from '@app/Other/TelegramBots.js';
+import { GNBot } from '../Other/TelegramBots.js';
 
 const getMe = async () => GNBot.getMe();
 

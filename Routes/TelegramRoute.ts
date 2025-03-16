@@ -1,9 +1,9 @@
 import moment from 'moment'
-import constants from '@app/Other/constants.js'
-import ScheduleEventsService from '@app/Services/ScheduleEventsService.js'
-import TelegramService from '@app/Services/TelegramService.js'
+import constants from '../Other/constants.js'
+import ScheduleEventsService from '../Services/ScheduleEventsService.js'
+import TelegramService from '../Services/TelegramService.js'
 
-import { GNBot, canReactOnMessage } from '@app/Other/TelegramBots.js'
+import { GNBot, canReactOnMessage } from '../Other/TelegramBots.js'
 
 // /reminder command
 GNBot.onText(/\/reminder/, async (payload) => {

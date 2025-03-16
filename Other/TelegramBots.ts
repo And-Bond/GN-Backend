@@ -1,7 +1,7 @@
 const { TELEGRAM_KEY, NODE_ENV, RAILWAY_PUBLIC_DOMAIN: API_PATH} = process.env
 const API_HOST = process.env.API_HOST || 3000; // Port for your bot server
 import TelegramBot from 'node-telegram-bot-api';
-import constants from '@app/Other/constants.js'
+import constants from '../Other/constants.js'
 import axios from 'axios';
 
 const GNBot = new TelegramBot(TELEGRAM_KEY, { webHook: true });
@@ -10,7 +10,7 @@ const GNBot = new TelegramBot(TELEGRAM_KEY, { webHook: true });
 let ngrok;
 if(NODE_ENV !== 'PROD'){
   console.log('Installing ngrok')
-  ngrok = require('ngrok');
+  ngrok = await import('ngrok')
 }
 
 // Error counter

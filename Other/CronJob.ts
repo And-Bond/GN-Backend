@@ -1,14 +1,16 @@
 import cron from 'node-cron'
-import constants from '@app/Other/constants.js'
+import constants from '../Other/constants.js'
 import fs from 'fs'
-import handlebars from '@app/Templates/HandelBars.js'
+import handlebars from '../Templates/HandelBars.js'
 import path from 'path'
 import moment from 'moment'
 
-import ScheduleEventsService from '@app/Services/ScheduleEventsService.js'
-import PlanningCenterService from '@app/Services/PlanningCenterService.js'
-import TelegramService from '@app/Services/TelegramService.js'
-
+import ScheduleEventsService from '../Services/ScheduleEventsService.js'
+import PlanningCenterService from '../Services/PlanningCenterService.js'
+import TelegramService from '../Services/TelegramService.js'
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const SundayServiceTemplate = fs.readFileSync(path.resolve(__dirname, '../Templates/SundayService.html'), 'utf-8')
 
 console.log('\n-------------------CRON--------------------\n')

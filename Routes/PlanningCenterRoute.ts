@@ -1,5 +1,5 @@
-import constants from '@app/Other/constants.js'
-import Services from '@Services'
+import constants from '../Other/constants.js'
+import Services from '../Services/index.js'
 
 const serviceId = process.env.NODE_ENV === 'PROD' ? constants.PlanningCenterServiceIds.SUNDAY_SERVICE : '1571901'
 

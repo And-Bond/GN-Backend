@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import AuthTokenModel from '@app/Models/AccountModel.js'
+import AuthTokenModel from '../Models/AccountModel.js'
 
 const create = (data) => {
   return AuthTokenModel.create(data)

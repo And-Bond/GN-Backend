@@ -1,6 +1,6 @@
-import Joi from '@joi'
-import UnFx from '@app/Other/UniversalFunctions.js'
-import AccountController from '@app/Controllers/AccountController.js'
+import Joi from '../joi.js'
+import UnFx from '../Other/UniversalFunctions.js'
+import AccountController from '../Controllers/AccountController.js'
 
 const accountValidation = Joi.object({
 

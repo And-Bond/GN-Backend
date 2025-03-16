@@ -1,6 +1,0 @@
-{
-  "watch": ["dist"],
-  "ext": "js,js",
-  "exec": "node --loader ts-node/esm dist/server.js",
-  "delay": "100ms"
-}

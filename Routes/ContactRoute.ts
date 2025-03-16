@@ -1,6 +1,6 @@
-import Joi from '@joi'
-import ContactsController from '@app/Controllers/ContactsController.js'
-import UnFx from '@app/Other/UniversalFunctions.js'
+import Joi from '../joi.js'
+import ContactsController from '../Controllers/ContactsController.js'
+import UnFx from '../Other/UniversalFunctions.js'
 
 const contactValidation = Joi.object({
 

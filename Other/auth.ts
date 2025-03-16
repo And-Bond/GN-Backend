@@ -1,4 +1,4 @@
-import Services from '@Services'
+import Services from '../Services/index.js'
 const JWT_SECRET = process.env.JWT_SECRET
 
 const validate = async (decoded, req, h) => {
@@ -25,7 +25,7 @@ const validate = async (decoded, req, h) => {
 };
 
 const registerAuth = async (server) => {
-    await server.register(require('hapi-auth-jwt2'));
+    await server.register(await import('hapi-auth-jwt2'));
 
     server.auth.strategy('jwt', 'jwt', {
         key: JWT_SECRET,
