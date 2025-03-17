@@ -4,6 +4,10 @@ import ScheduleEventsService from '../Services/ScheduleEventsService.js'
 import TelegramService from '../Services/TelegramService.js'
 
 import { GNBot, canReactOnMessage } from '../Other/TelegramBots.js'
+const { NODE_ENV, TELEGRAM_WEBHOOK_SECRET_TOKEN } = process.env
+// Type imports
+import type Hapi from '@hapi/hapi'
+import TelegramBot from 'node-telegram-bot-api'
 
 // /reminder command
 GNBot.onText(/\/reminder/, async (payload) => {
@@ -99,8 +103,16 @@ export default [
     {
         method: 'POST',
         path: '/telegram',
-        handler: async(req,h) => {
+        handler: async(req: Hapi.Request & { payload: TelegramBot.Update }) => {
             try {
+                // On prod we are checking if it's telegram send req to us or something else
+                if(NODE_ENV === 'PROD'){
+                    const secretToken = req.headers["x-telegram-bot-api-secret-token"];
+                    if (secretToken !== TELEGRAM_WEBHOOK_SECRET_TOKEN) {
+                        console.warn("[PROD] INVALID REQUEST TO /telegram PATH!", req.headers);
+                        return { data: false };
+                    }
+                }
                 const payload = canReactOnMessage(req.payload)
                 if(payload){
                     GNBot.processUpdate(payload)

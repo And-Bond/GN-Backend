@@ -1,22 +1,48 @@
-import mongoose from "mongoose"
+import mongoose, { Document } from "mongoose"
 const Schema = mongoose.Schema
-const ObjectId = mongoose.Types.ObjectId
+type ObjectId = mongoose.Types.ObjectId
 import constants from "../Other/constants.js"
 
-const Contact = new Schema({
+export interface IContactModel extends Document {
+    name: string;
+    emails?: { value: string }[];
+    phones?: { value: string }[];
+    accountId: ObjectId;
+    active?: boolean;
+    auth: {
+        email: string;
+        password: string;
+    };
+    telegramId: string;
+    createdAt?: Date;
+}
+
+const ContactSchema = new Schema<IContactModel>({
     name: {
         type: String,
         required: true
     },
-    emails: [{
-        value: String,
-    }],
-    phones: [{
-        value: String
-    }],
+    emails: {
+        type: [{
+            value: {
+                type: String,
+                required: true
+            }
+        }],
+        default: []
+    },
+    phones: {
+        type: [{
+            value: {
+                type: String,
+                required: true
+            }
+        }],
+        default: []
+    },
     accountId: {
-        ref: 'Account',
-        type: ObjectId,
+        type: Schema.Types.ObjectId,
+        ref: "Account",
         required: true
     },
     active: {
@@ -24,13 +50,20 @@ const Contact = new Schema({
         default: true
     },
     auth: {
-        email: String,
-        password: String
+        email: { type: String, required: true },
+        password: { type: String, required: true }
     },
-    telegramId: String
-}, { timestamps: true })
+    telegramId: {
+        type: String,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
 
 
-const ContactModel = mongoose.model('Contact', Contact)
+const ContactModel = mongoose.model('Contact', ContactSchema)
 
 export default ContactModel

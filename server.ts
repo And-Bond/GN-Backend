@@ -1,10 +1,15 @@
 'use strict';
 
-import Hapi from '@hapi/hapi';
+import Hapi, { ResponseToolkit } from '@hapi/hapi';
 import mongoose from 'mongoose';
 import Boom from '@hapi/boom';
 
 const { RAILWAY_PUBLIC_DOMAIN: API_PATH, API_HOST, MONGODB_PATH, NODE_ENV } = process.env;
+
+if(!MONGODB_PATH){
+    console.log('IMPORTANT ENV IS MISSING: MONGODB_PATH')
+    process.exit(1)
+}
 
 import routes from './Routes/index.js';
 import { initTelegramBot } from './Other/TelegramBots.js';
@@ -29,18 +34,18 @@ const init = async () => {
     server.route({
         method: 'GET',
         path: '/',
-        handler: (request, h) => {
+        handler: () => {
             return 'GN Backed is working good';
         }
     });
 
-    server.ext('onRequest', (request, h) => {
+    server.ext('onRequest', (request: Hapi.Request, h: ResponseToolkit) => {
         console.log(`Incoming Request: ${request.method.toUpperCase()} ${request.path}`);
         return h.continue;
     });
 
     // Log after the response is sent
-    server.ext('onPreResponse', (request, h) => {
+    server.ext('onPreResponse', (request: Hapi.Request, h: ResponseToolkit) => {
         const response = request.response;
         
         // Type guard to check if the response is an instance of Boom

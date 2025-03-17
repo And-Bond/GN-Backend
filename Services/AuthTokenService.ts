@@ -1,62 +1,56 @@
-import mongoose from 'mongoose'
-import AuthTokenModel from '../Models/AccountModel.js'
+import AuthTokenModal from '../Models/AuthTokenModel.js'
+// Type imports
+import type mongoose from 'mongoose'
+import type { FilterQuery, UpdateQuery, QueryOptions, CreateOptions, MongooseUpdateQueryOptions, PipelineStage } from 'mongoose';
+import type { IAuthTokenModal } from '../Models/AuthTokenModel.js'
+type ObjectId = mongoose.Types.ObjectId
 
-const create = (data) => {
-  return AuthTokenModel.create(data)
+const getById = (id: ObjectId) => {
+    return AuthTokenModal.findById(id)
 }
 
-const getById = (id) => {
-  return AuthTokenModel.findOne({ _id: new mongoose.Types.ObjectId(id) }, null, { lean: true })
+const getOne = (criteria: FilterQuery<IAuthTokenModal>) => {
+    return AuthTokenModal.findOne(criteria)
 }
 
-const get = (criteria, projection = {}, options:any = {}) => {
-  options.lean = true
-  options.skip = Number(options.page)
-  options.limit = Number(options.limit)
-
-
-  return AuthTokenModel.find(criteria, projection, options)
-    .skip((options.skip - 1) * options.limit)
-    .sort({ createdAt: -1 })
+const getMany = (criteria: FilterQuery<IAuthTokenModal>) => {
+    return AuthTokenModal.find(criteria)
 }
 
-const getOne = (query, projection = {}) => {
-  return AuthTokenModel.findOne(query, projection)
+const create = (userData: IAuthTokenModal,options: CreateOptions = {}) => {
+    return AuthTokenModal.create(userData, options)
 }
 
-const aggregate = async (criteria, populate) => {
-  let data = await AuthTokenModel.aggregate(criteria).allowDiskUse(true).exec()
-
-  if (populate) {
-    return await AuthTokenModel.populate(data, populate)
-  } else {
-    return data
-  }
+const updateOne = (criteria: FilterQuery<IAuthTokenModal>, updateData: UpdateQuery<IAuthTokenModal>, options: QueryOptions = {}) => {
+    options.lean = true
+    options.new = true
+    return AuthTokenModal.findOneAndUpdate(criteria, updateData, options)
 }
 
-const updateOne = (criteria, dataToSet, options) => {
-  options = options || {}
-  options.lean = true
-  options.new = true
-  return AuthTokenModel.updateOne(criteria, dataToSet, options)
+const updateMany = (criteria: FilterQuery<IAuthTokenModal>, updateData: UpdateQuery<IAuthTokenModal>, options: MongooseUpdateQueryOptions<IAuthTokenModal> = {}) => {
+    return AuthTokenModal.updateMany(criteria,updateData,options)
 }
 
-const updateMany = (criteria, dataToSet, options) => {
-  options = options || {}
-  options.lean = true
-  options.new = true
-  return AuthTokenModel.updateMany(criteria, dataToSet, options)
+const deleteOne = (criteria: FilterQuery<IAuthTokenModal>) => {
+    return AuthTokenModal.deleteOne(criteria)
 }
 
-const deleteOne = (criteria) => AuthTokenModel.deleteOne(criteria)
+const deleteMany = (criteria: FilterQuery<IAuthTokenModal>) => {
+    return AuthTokenModal.deleteMany(criteria)
+}
+
+const aggregate = (criteria: PipelineStage[]): Promise<IAuthTokenModal[]> => {
+    return AuthTokenModal.aggregate(criteria).allowDiskUse(true)
+}
 
 export default {
-  create,
-  getById,
-  get,
-  getOne,
-  aggregate,
-  updateOne,
-  updateMany,
-  deleteOne
+    getOne,
+    getMany,
+    getById,
+    create,
+    updateOne,
+    updateMany,
+    deleteOne,
+    deleteMany,
+    aggregate
 }

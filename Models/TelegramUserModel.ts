@@ -2,7 +2,17 @@ import mongoose from "mongoose"
 const Schema = mongoose.Schema
 const ObjectId = mongoose.Types.ObjectId
 
-const TelegramUser = new Schema({
+export interface ITelegramUser {
+    userId: string,
+    active?: boolean,
+    auth?: {
+        name?: string,
+        password?: string
+    },
+    lastMessageAt?: Date
+}
+
+const TelegramUser = new Schema<ITelegramUser>({
     userId: {
         type: String,
         required: true

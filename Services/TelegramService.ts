@@ -1,56 +1,38 @@
 import { GNBot } from '../Other/TelegramBots.js';
+// Types
+import type TelegramBot from 'node-telegram-bot-api'
 
 const getMe = async () => GNBot.getMe();
 
-const sendMessage = async (payload) => {
-  return GNBot.sendMessage(payload.chatId, payload.message, {
-    parse_mode: payload.parseMode,
-    message_thread_id: payload.messageThreadId,
-  });
+const sendMessage = async (chatId: TelegramBot.ChatId, message: string, options?: TelegramBot.SendMessageOptions) => {
+  return GNBot.sendMessage(chatId, message, options);
 };
 
-const editMessage = async (payload) => {
-  return GNBot.editMessageText(payload.message, {
-    chat_id: payload.chatId,
-    message_id: payload.messageId,
-    parse_mode: payload.parseMode,
-  });
+const editMessage = async (message: string, options: TelegramBot.EditMessageTextOptions) => {
+  return GNBot.editMessageText(message, options);
 };
 
-const sendMenuButtons = async (chatId, message, buttons) => {
-  return GNBot.sendMessage(chatId, message, {
-    reply_markup: {
-      keyboard: buttons.map((row) => row.map((text) => ({ text }))),
-      resize_keyboard: true,
-      one_time_keyboard: true,
-    },
-  });
+const sendMenuButtons = async (chatId: TelegramBot.ChatId, message: string, options: TelegramBot.SendMessageOptions) => {
+  return GNBot.sendMessage(chatId, message, options);
 };
 
-const sendInlineMenuButtons = async (payload) => {
-  return GNBot.sendMessage(payload.chatId, payload.message, {
-    message_thread_id: payload.messageThreadId,
-    reply_markup: {
-      inline_keyboard: payload.buttons.map((row) =>
-        row.map(({ text, callback_data }) => ({ text, callback_data }))
-      ),
-    },
-  });
+const sendInlineMenuButtons = async (chatId: TelegramBot.ChatId, message: string, options: TelegramBot.SendMessageOptions) => {
+  return GNBot.sendMessage(chatId, message, options);
 };
 
-const getChatInfo = async (chatId) => GNBot.getChat(chatId);
+const getChatInfo = async (chatId: TelegramBot.ChatId) => GNBot.getChat(chatId);
 
-const getMemberInfoFromChat = async (chatId, userId) => {
+const getMemberInfoFromChat = async (chatId: TelegramBot.ChatId, userId: number) => {
   return GNBot.getChatMember(chatId, userId);
 };
 
-const createPoll = async (chatId, question, options, isAnonymous) => {
-  return GNBot.sendPoll(chatId, question, options, { is_anonymous: isAnonymous });
+const createPoll = async (chatId: TelegramBot.ChatId, question: string, pullOptions: string[], options: TelegramBot.SendPollOptions) => {
+  return GNBot.sendPoll(chatId, question, pullOptions, options);
 };
 
-const sendDice = async (chatId) => GNBot.sendDice(chatId);
+const sendDice = async (chatId: TelegramBot.ChatId) => GNBot.sendDice(chatId);
 
-const setWebhook = async (url) => GNBot.setWebHook(url);
+const setWebhook = async (url: string) => GNBot.setWebHook(url);
 
 const getWebhookInfo = async () => GNBot.getWebHookInfo();
 

@@ -1,6 +1,13 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
+type ObjectId = mongoose.Types.ObjectId
 
-const AuthTokenSchema = new mongoose.Schema({
+export interface IAuthTokenModal extends Document {
+    accessToken: string,
+    contactId?: ObjectId,
+    createdAt: Date
+}
+
+const AuthTokenSchema = new mongoose.Schema<IAuthTokenModal>({
     accessToken: {
         type: String,
         required: true

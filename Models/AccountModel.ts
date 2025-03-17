@@ -1,20 +1,45 @@
 import mongoose from "mongoose"
-const Schema = mongoose.Schema
-const ObjectId = mongoose.Types.ObjectId
 import constants from "../Other/constants.js"
+// Type imports
+import type { Document } from 'mongoose'
+const Schema = mongoose.Schema
+type ObjectId = mongoose.Types.ObjectId
 
-const Account = new Schema({
+export interface IAccountModel extends Document {
+    name: string
+    emails?: { value: string }[]
+    phones?: { value: string }[]
+    createdAt?: Date
+}
+
+const Account = new Schema<IAccountModel>({
     name: {
         type: String,
         required: true
     },
-    emails: [{
-        value: String,
-    }],
-    phones: [{
-        value: String
-    }],
-}, { timestamps: true })
+    emails: {
+        type: [{
+            value: {
+                type: String,
+                required: true
+            }
+        }],
+        default: []
+    },
+    phones: {
+        type: [{
+            value: {
+                type: String,
+                required: true
+            }
+        }],
+        default: []
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+})
 
 
 const AccountModel = mongoose.model('Account', Account)
