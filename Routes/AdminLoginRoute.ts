@@ -1,14 +1,14 @@
-import Joi from 'joi'
-import joiObjectId from 'joi-objectid'
-(Joi as any).objectId = joiObjectId(Joi)
+import Joi from '../joi.js'
 import UnFx from '../Other/UniversalFunctions.js'
 import AdminLoginController from '../Controllers/AdminLoginController.js'
+import type { ResponseToolkit } from '@hapi/hapi'
+import type Hapi from '@hapi/hapi'
 
 export default [
     {
         method: 'POST',
         path: '/admin/login',
-        handler: async(req, h) => AdminLoginController.loginAdmin(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AdminLoginController.loginAdmin(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -26,7 +26,7 @@ export default [
     {
         method: 'POST',
         path: '/admin/loginViaAccessToken',
-        handler: async(req, h) => AdminLoginController.loginAdminViaAccessToken(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AdminLoginController.loginAdminViaAccessToken(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -38,7 +38,7 @@ export default [
     {
         method: 'POST',
         path: '/admin/logout',
-        handler: async(req, h) => AdminLoginController.logoutAdmin(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AdminLoginController.logoutAdmin(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {

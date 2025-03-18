@@ -1,6 +1,8 @@
 import Joi from '../joi.js'
 import ContactsController from '../Controllers/ContactsController.js'
 import UnFx from '../Other/UniversalFunctions.js'
+import type { ResponseToolkit } from '@hapi/hapi'
+import type Hapi from '@hapi/hapi'
 
 const contactValidation = Joi.object({
 
@@ -14,7 +16,7 @@ export default [
     {
         method: 'GET',
         path: '/contacts/{_id}',
-        handler: async(req, h) => ContactsController.getContactById(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.getContactById(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -34,7 +36,7 @@ export default [
     {
         method: 'GET',
         path: '/contacts',
-        handler: async(req, h) => ContactsController.getContacts(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.getContacts(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -51,7 +53,7 @@ export default [
     {
         method: 'POST',
         path: '/contacts',
-        handler: async(req, h) => ContactsController.createContact(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.createContact(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -66,7 +68,7 @@ export default [
     {
         method: 'PATCH',
         path: '/contacts/{_id}',
-        handler: async(req, h) => ContactsController.updateContact(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.updateContact(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -85,7 +87,7 @@ export default [
     {
         method: 'DELETE',
         path: '/contacts/{_id}',
-        handler: async(req, h) => ContactsController.deleteContact(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.deleteContact(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {

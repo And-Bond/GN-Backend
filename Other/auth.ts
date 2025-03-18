@@ -1,8 +1,14 @@
 import Services from '../Services/index.js'
 const JWT_SECRET = process.env.JWT_SECRET
+// Type imports
+import type Hapi from '@hapi/hapi'
+import type Joi from 'joi';
 
-const validate = async (decoded, req, h) => {
+// What we are saving to jwt token
+const validate = async (decoded: {[key: string]: any}, req: Hapi.Request) => {
     try {
+        // Check later
+        // @ts-ignore
         const accessToken = req.auth.token
         if (!decoded || !decoded._id || !accessToken) {
             return { isValid: false };
@@ -24,7 +30,7 @@ const validate = async (decoded, req, h) => {
     }
 };
 
-const registerAuth = async (server) => {
+const registerAuth = async (server: Hapi.Server) => {
     await server.register(await import('hapi-auth-jwt2'));
 
     server.auth.strategy('jwt', 'jwt', {

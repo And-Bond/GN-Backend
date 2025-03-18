@@ -4,11 +4,11 @@ const ObjectId = mongoose.Types.ObjectId
 import constants from "../Other/constants.js"
 
 export interface IScheduleEvent {
-    chatId: string,
-    threadId: string,
-    nextSendAt: Date,
-    type: string,
-    planItemName: string
+    chatId?: string,
+    threadId?: string,
+    nextSendAt?: Date,
+    type?: string,
+    planItemName?: string
 }
 
 const ScheduleEvent = new Schema<IScheduleEvent>({

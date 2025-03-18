@@ -1,5 +1,9 @@
 import constants from '../Other/constants.js'
 import Services from '../Services/index.js'
+// Type imports
+import type { ResponseToolkit } from '@hapi/hapi'
+import type Hapi from '@hapi/hapi'
+import type TelegramBot from 'node-telegram-bot-api'
 
 const serviceId = process.env.NODE_ENV === 'PROD' ? constants.PlanningCenterServiceIds.SUNDAY_SERVICE : '1571901'
 
@@ -7,7 +11,7 @@ export default [
   {
       method: 'POST',
       path: '/planning-center-webhook',
-      handler: async(req,h) => {
+      handler: async(req: Hapi.Request & { payload: any }, h: ResponseToolkit) => {
           try {
             let eventType = req.headers['x-pco-webhooks-name']
             let events = req.payload.data
@@ -18,7 +22,7 @@ export default [
                         const planId = eventData.data.relationships.plan.data.id
                         const itemId = eventData.data.relationships.item.data.id
                         const planItems = await Services.PlanningCenterService.getPlanItems(serviceId,planId)
-                        const itemInfo = planItems?.data?.data?.find((item) => item.id === itemId)
+                        const itemInfo = planItems?.data?.data?.find((item: any) => item.id === itemId)
                         if(itemInfo?.attributes?.title){
                             let toSend = await Services.ScheduleEventsService.getMany({
                                 chatId: {
@@ -28,15 +32,13 @@ export default [
                                 planItemName: itemInfo.attributes.title
                             })
                             for(let schedule of toSend){
-                                let payload = {
-                                    chatId: schedule.chatId,
-                                    message: 'До початку залишилося <b>10 хвилин!</b>',
-                                    parseMode: 'HTML'
+                                let options: TelegramBot.SendMessageOptions = {
+                                    parse_mode: 'HTML'
                                 }
                                 if(schedule.threadId){
-                                    payload['messageThreadId'] = schedule.threadId
+                                    options['message_thread_id'] = Number(schedule.threadId)
                                 }
-                                await Services.TelegramService.sendMessage(payload)
+                                await Services.TelegramService.sendMessage(schedule.chatId!, 'До початку залишилося <b>10 хвилин!</b>', options)
                             }
                         }
                     } 

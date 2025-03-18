@@ -1,6 +1,8 @@
 import Joi from '../joi.js'
 import UnFx from '../Other/UniversalFunctions.js'
 import AccountController from '../Controllers/AccountController.js'
+import type { ResponseToolkit } from '@hapi/hapi'
+import type Hapi from '@hapi/hapi'
 
 const accountValidation = Joi.object({
 
@@ -14,7 +16,7 @@ export default [
     {
         method: 'GET',
         path: '/accounts/{_id}',
-        handler: async(req, h) => AccountController.getAccountById(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.getAccountById(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -34,7 +36,7 @@ export default [
     {
         method: 'GET',
         path: '/accounts',
-        handler: async(req, h) => AccountController.getAccounts(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.getAccounts(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -51,7 +53,7 @@ export default [
     {
         method: 'POST',
         path: '/accounts',
-        handler: async(req, h) => AccountController.createAccount(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.createAccount(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -66,7 +68,7 @@ export default [
     {
         method: 'PATCH',
         path: '/accounts/{_id}',
-        handler: async(req, h) => AccountController.updateAccount(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.updateAccount(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -85,7 +87,7 @@ export default [
     {
         method: 'DELETE',
         path: '/accounts/{_id}',
-        handler: async(req, h) => AccountController.deleteAccount(req)
+        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.deleteAccount(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {

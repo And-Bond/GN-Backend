@@ -9,6 +9,9 @@ import ScheduleEventsService from '../Services/ScheduleEventsService.js'
 import PlanningCenterService from '../Services/PlanningCenterService.js'
 import TelegramService from '../Services/TelegramService.js'
 import { fileURLToPath } from 'url';
+// Type imports
+import type TelegramBot from 'node-telegram-bot-api'
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SundayServiceTemplate = fs.readFileSync(path.resolve(__dirname, '../Templates/SundayService.html'), 'utf-8')
@@ -45,15 +48,15 @@ const check = async () => {
         if(!nextSundayPlan || moment(nextSundayPlan?.attributes?.sort_date).isBefore(moment())){
             console.warn('Failed to send Sunday Service reminder, no plan set!!!')
         }else {
-            const res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id)
-            const allSongs = res.data.data.filter(item => item.attributes.item_type === 'song')
+            const res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id) as any
+            const allSongs = res.data.data.filter((item: any) => item.attributes.item_type === 'song')
             if(!allSongs?.length){
                 console.warn('Failed to send Sunday Service reminder, no songs at plan',nextSundayPlan?.attributes?.dates)
             }
             const template = handlebars.compile(SundayServiceTemplate)
             const message = template({
                 date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
-                songs: allSongs.map(song => {
+                songs: allSongs.map((song: any) => {
                     return {
                         title: song.attributes.title,
                         description: song.attributes.description
@@ -63,11 +66,11 @@ const check = async () => {
     
             for(let schedule of sundayService){
                 try{
-                    let payload = { chatId: schedule.chatId, message, parseMode: 'HTML' }
+                    let options: TelegramBot.SendMessageOptions = { parse_mode: 'HTML' }
                     if(schedule.threadId){
-                        payload['messageThreadId'] = schedule.threadId
+                        options['message_thread_id'] = Number(schedule.threadId)
                     }
-                    await TelegramService.sendMessage(payload)
+                    await TelegramService.sendMessage(schedule.chatId!, message, options)
                     // Hard code every thursday
                     const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
                     if(moment().utc().isAfter(nextTimeSchedule)){

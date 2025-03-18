@@ -1,8 +1,15 @@
+import Joi from '../joi.js'
+import type Hapi from '@hapi/hapi'
+
+type ProWebhook = {
+  ngrok_url: string
+}
+
 export default [
   {
     method: 'POST',
     path: '/pro_webhook',
-    handler: async(req,h) => {
+    handler: async(req: Hapi.Request & { payload: ProWebhook }) => {
         try {
           let payload = req.payload
           if(payload.ngrok_url){
@@ -18,7 +25,11 @@ export default [
 
     },
     options: {
-
+      validate: {
+        payload: Joi.object({
+          ngrok_url: Joi.string().required()
+        })
+      }
     }
-},
+  },
 ]
