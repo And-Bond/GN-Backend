@@ -1,8 +1,9 @@
 import mongoose from "mongoose"
 const Schema = mongoose.Schema
-const ObjectId = mongoose.Types.ObjectId
+type ObjectId = mongoose.Types.ObjectId
 
 export interface ITelegramUser {
+    _id: ObjectId;
     userId: string,
     active?: boolean,
     auth?: {

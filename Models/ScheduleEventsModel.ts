@@ -1,9 +1,10 @@
 import mongoose from "mongoose"
 const Schema = mongoose.Schema
-const ObjectId = mongoose.Types.ObjectId
+type ObjectId = mongoose.Types.ObjectId
 import constants from "../Other/constants.js"
 
 export interface IScheduleEvent {
+    _id: ObjectId;
     chatId?: string,
     threadId?: string,
     nextSendAt?: Date,

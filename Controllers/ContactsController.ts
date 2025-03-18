@@ -1,11 +1,15 @@
 import Services from '../Services/index.js'
-const ObjectId = require('mongoose').Types.ObjectId
+import mongoose from 'mongoose'
+const ObjectId = mongoose.Types.ObjectId
+// Type imports
+import type Hapi from '@hapi/hapi'
+import { IContactModel } from 'Models/ContactModel.js'
 
 
 export default {
-    getContactById: async(req) => {
+    getContactById: async(req: Hapi.Request & { params: { _id: string } }) => {
         const { _id } = req.params
-        const contact = await Services.ContactService.getById(_id)
+        const contact = await Services.ContactService.getById(new ObjectId(_id))
         if(!contact){
             throw {
                 statusCode: 404,
@@ -15,12 +19,12 @@ export default {
 
         return { contact: contact }
     },
-    getContacts: async(req) => {
+    getContacts: async(req: Hapi.Request) => {
         try{
             const query = { ...req.query }
             const populate = req?.query?.populate || []
 
-            const criteriaAll = []
+            const criteriaAll: mongoose.PipelineStage[] = []
     
             // if (query.name) criteriaAll.push({ $match: { fullName: { $regex: query.name, $options: 'i' } } });
 
@@ -47,7 +51,7 @@ export default {
             throw err
         }
     },
-    createContact: async(req) => {
+    createContact: async(req: Hapi.Request & { payload: IContactModel }) => {
         try{
             const payload = req.payload
             const contact = await Services.ContactService.create(payload)
@@ -57,9 +61,9 @@ export default {
             throw err
         }
     },
-    updateContact: async(req) => {
+    updateContact: async(req: Hapi.Request & { params: { _id: string }, payload: Partial<IContactModel> }) => {
         const { _id } = req.params
-        const contact = await Services.ContactService.getById(_id)
+        const contact = await Services.ContactService.getById(new ObjectId(_id))
         if(!contact){
             throw {
                 statusCode: 404,
@@ -71,7 +75,7 @@ export default {
         const updatedContact = await Services.ContactService.updateOne({ _id: new ObjectId(_id) }, payload)
         return { contact: updatedContact }
     },
-    deleteContact: async(req) => {
+    deleteContact: async(req: Hapi.Request) => {
         try{
             const { _id } = req.params
             const contact = await Services.ContactService.getById(_id)

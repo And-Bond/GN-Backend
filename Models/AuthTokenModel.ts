@@ -1,13 +1,15 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, InferSchemaType } from "mongoose";
 type ObjectId = mongoose.Types.ObjectId
 
-export interface IAuthTokenModal extends Document {
-    accessToken: string,
-    contactId?: ObjectId,
-    createdAt: Date
-}
+// export interface IAuthTokenModal extends Document {
+//     _id: ObjectId;
+//     accessToken: string,
+//     contactId?: ObjectId,
+//     createdAt?: Date
+// }
 
-const AuthTokenSchema = new mongoose.Schema<IAuthTokenModal>({
+
+const AuthTokenSchema = new mongoose.Schema({
     accessToken: {
         type: String,
         required: true
@@ -21,5 +23,7 @@ const AuthTokenSchema = new mongoose.Schema<IAuthTokenModal>({
         default: Date.now,
     }
 })
+
+export type IAuthTokenModel = InferSchemaType<typeof AuthTokenSchema>
 
 export default mongoose.model('AuthToken', AuthTokenSchema);

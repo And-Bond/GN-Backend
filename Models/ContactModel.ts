@@ -4,6 +4,7 @@ type ObjectId = mongoose.Types.ObjectId
 import constants from "../Other/constants.js"
 
 export interface IContactModel extends Document {
+    _id: ObjectId;
     name: string;
     emails?: { value: string }[];
     phones?: { value: string }[];

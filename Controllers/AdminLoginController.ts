@@ -1,9 +1,20 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import Services from '../Services/index.js'
+// Type imports
+import type Hapi from '@hapi/hapi'
+import { IContactModel } from 'Models/ContactModel.js'
+import mongoose from 'mongoose'
+const ObjectId = mongoose.Types.ObjectId
+
+const { JWT_SECRET } = process.env
+if(!JWT_SECRET){
+    console.log('IMPORTANT ENV IS MISSING: JWT_SECRET')
+    process.exit(1)
+}
 
 export default {
-    loginAdmin: async (req) => {
+    loginAdmin: async (req: Hapi.Request & { payload: { email: string, password: string } }) => {
         const { email, password } = req.payload
         const contact = await Services.ContactService.getOne({ email: email })
 
@@ -16,12 +27,12 @@ export default {
             throw 'Invalid password'
         }
 
-        const token = jwt.sign({ _id: contact._id, createdAt: Date.now() }, process.env.JWT_SECRET)
+        const token = jwt.sign({ _id: contact._id, createdAt: Date.now() }, JWT_SECRET)
         await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token })
 
         return { contact: contact, accessToken: token }
     },
-    loginAdminViaAccessToken: async(req) => {
+    loginAdminViaAccessToken: async(req: Hapi.Request) => {
         const { token } = req.auth
         const tokenExists = await Services.AuthTokenService.getOne({ accessToken: token })
         if(!tokenExists){
@@ -42,7 +53,7 @@ export default {
         }
         return { contact: contact, accessToken: token }
     },
-    logoutAdmin: async(req) => {
+    logoutAdmin: async(req: Hapi.Request) => {
         const accessToken = req.auth.token
         await Services.AuthTokenService.deleteOne({ accessToken: accessToken })
         return { message: 'Successfully logged out' }

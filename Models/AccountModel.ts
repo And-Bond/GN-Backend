@@ -6,6 +6,7 @@ const Schema = mongoose.Schema
 type ObjectId = mongoose.Types.ObjectId
 
 export interface IAccountModel extends Document {
+    _id: ObjectId;
     name: string
     emails?: { value: string }[]
     phones?: { value: string }[]
