@@ -1,6 +1,58 @@
 
 import axios from 'axios'
 
+type Plan = {
+    type: "Plan";
+    id: string;
+    attributes: {
+      can_view_order?: boolean;
+      prefers_order_view?: boolean;
+      rehearsable?: boolean;
+      items_count?: number;
+      permissions?: string;
+      created_at?: string;
+      title?: string;
+      updated_at?: string;
+      public?: boolean;
+      series_title?: string;
+      plan_notes_count?: number;
+      other_time_count?: number;
+      rehearsal_time_count?: number;
+      service_time_count?: number;
+      plan_people_count?: number;
+      needed_positions_count?: number;
+      total_length?: number;
+      multi_day?: boolean;
+      files_expire_at?: string;
+      sort_date?: string;
+      last_time_at?: string;
+      dates?: string;
+      short_dates?: string;
+      planning_center_url?: string;
+      reminders_disabled?: boolean;
+    };
+    relationships?: {
+      service_type?: { data?: { type: "ServiceType"; id: string } };
+      previous_plan?: { data?: { type: "Plan"; id: string } };
+      next_plan?: { data?: { type: "Plan"; id: string } };
+      series?: { data?: { type: "Series"; id: string } };
+      created_by?: { data?: { type: "Person"; id: string } };
+      updated_by?: { data?: { type: "Person"; id: string } };
+      linked_publishing_episode?: {
+        data?: { type: "LinkedPublishingEpisode"; id: string };
+      };
+      attachment_types?: {
+        data?: { type: "AttachmentType"; id: string }[];
+      };
+    };
+  };
+
+type getPlansListResponse = Promise<{
+    data: {
+        data: Plan[]
+    }
+}>
+
 const { PLANNING_CENTER_CLIENT_ID, PLANNING_CENTER_SECRET_TOKEN } = process.env
 
 if(!PLANNING_CENTER_CLIENT_ID || !PLANNING_CENTER_SECRET_TOKEN){
@@ -29,7 +81,7 @@ const getOrganizationPeople = async () => api.get('/people')
 const getServiceTypes = async () => api.get('/service_types')
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/plan
-const getPlansList = async (serviceTypeId: string, params: any) => api.get('/service_types/' + serviceTypeId + '/plans', {
+const getPlansList = async (serviceTypeId: string, params: any): getPlansListResponse => api.get('/service_types/' + serviceTypeId + '/plans', {
     params: params
 })
 
