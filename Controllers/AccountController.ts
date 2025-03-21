@@ -2,9 +2,11 @@
 import Services from '../Services/index.js'
 import mongoose from 'mongoose'
 const ObjectId = mongoose.Types.ObjectId
+import type Hapi from '@hapi/hapi'
+import type { createAccountRequest, deleteAccountRequest, getAccountByIdRequest, getAccountsRequest, updateAccountRequest } from 'Routes/AccountRoute.js'
 
 export default {
-    getAccountById: async(req) => {
+    getAccountById: async(req: Hapi.Request & getAccountByIdRequest) => {
         const { _id } = req.params
         const account = await Services.AccountService.getById(_id)
         if(!account){
@@ -16,12 +18,12 @@ export default {
 
         return { account: account }
     },
-    getAccounts: async(req) => {
+    getAccounts: async(req: Hapi.Request & getAccountsRequest) => {
         try{
             const query = { ...req.query }
             const populate = req?.query?.populate || []
 
-            const criteriaAll = []
+            const criteriaAll: mongoose.PipelineStage[] = []
     
             // if (query.name) criteriaAll.push({ $match: { fullName: { $regex: query.name, $options: 'i' } } });
 
@@ -48,7 +50,7 @@ export default {
             throw err
         }
     },
-    createAccount: async(req) => {
+    createAccount: async(req: Hapi.Request & createAccountRequest) => {
         try{
             const payload = req.payload
             const account = await Services.AccountService.create(payload)
@@ -58,9 +60,9 @@ export default {
             throw err
         }
     },
-    updateAccount: async(req) => {
+    updateAccount: async(req: Hapi.Request & updateAccountRequest) => {
         const { _id } = req.params
-        const account = await Services.AccountService.getById(_id)
+        const account = await Services.AccountService.getById(new ObjectId(_id))
         if(!account){
             throw {
                 statusCode: 404,
@@ -72,10 +74,10 @@ export default {
         const updatedAccount = await Services.AccountService.updateOne({ _id: new ObjectId(_id) }, payload)
         return { account: updatedAccount }
     },
-    deleteAccount: async(req) => {
+    deleteAccount: async(req: Hapi.Request & deleteAccountRequest) => {
         try{
             const { _id } = req.params
-            const account = await Services.AccountService.getById(_id)
+            const account = await Services.AccountService.getById(new ObjectId(_id))
             if(!account){
                 throw {
                     statusCode: 404,

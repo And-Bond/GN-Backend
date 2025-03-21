@@ -3,11 +3,12 @@ import mongoose from 'mongoose'
 const ObjectId = mongoose.Types.ObjectId
 // Type imports
 import type Hapi from '@hapi/hapi'
-import { IContactModel } from 'Models/ContactModel.js'
+import type { IContactModel } from 'Models/ContactModel.js'
+import type { createContactRequest, deleteContactRequest, getContactByIdRequest, updateContactRequest } from 'Routes/ContactRoute.js'
 
 
 export default {
-    getContactById: async(req: Hapi.Request & { params: { _id: string } }) => {
+    getContactById: async(req: Hapi.Request & getContactByIdRequest) => {
         const { _id } = req.params
         const contact = await Services.ContactService.getById(new ObjectId(_id))
         if(!contact){
@@ -51,7 +52,7 @@ export default {
             throw err
         }
     },
-    createContact: async(req: Hapi.Request & { payload: IContactModel }) => {
+    createContact: async(req: Hapi.Request & createContactRequest) => {
         try{
             const payload = req.payload
             const contact = await Services.ContactService.create(payload)
@@ -61,7 +62,7 @@ export default {
             throw err
         }
     },
-    updateContact: async(req: Hapi.Request & { params: { _id: string }, payload: Partial<IContactModel> }) => {
+    updateContact: async(req: Hapi.Request & updateContactRequest) => {
         const { _id } = req.params
         const contact = await Services.ContactService.getById(new ObjectId(_id))
         if(!contact){
@@ -75,10 +76,10 @@ export default {
         const updatedContact = await Services.ContactService.updateOne({ _id: new ObjectId(_id) }, payload)
         return { contact: updatedContact }
     },
-    deleteContact: async(req: Hapi.Request) => {
+    deleteContact: async(req: Hapi.Request & deleteContactRequest) => {
         try{
             const { _id } = req.params
-            const contact = await Services.ContactService.getById(_id)
+            const contact = await Services.ContactService.getById(new ObjectId(_id))
             if(!contact){
                 throw {
                     statusCode: 404,

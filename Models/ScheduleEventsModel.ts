@@ -2,8 +2,9 @@ import mongoose from "mongoose"
 const Schema = mongoose.Schema
 type ObjectId = mongoose.Types.ObjectId
 import constants from "../Other/constants.js"
+import type { Document } from 'mongoose'
 
-export interface IScheduleEvent {
+export interface IScheduleEvent extends Document {
     _id: ObjectId;
     chatId?: string,
     threadId?: string,

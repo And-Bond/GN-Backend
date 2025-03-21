@@ -1,8 +1,35 @@
 import Joi from '../joi.js'
 import UnFx from '../Other/UniversalFunctions.js'
 import AccountController from '../Controllers/AccountController.js'
+// Type imports
 import type { ResponseToolkit } from '@hapi/hapi'
 import type Hapi from '@hapi/hapi'
+import type { IAccountModel } from 'Models/AccountModel.js'
+
+export type getAccountByIdRequest = {
+    _id: string
+}
+
+export type getAccountsRequest = {
+    query?: {[key: string]: any}
+}
+
+export type createAccountRequest = {
+    payload: IAccountModel
+}
+
+export type updateAccountRequest = {
+    params: {
+        _id: string
+    },
+    payload: Partial<IAccountModel>
+}
+
+export type deleteAccountRequest = {
+    params: {
+        _id: string
+    }
+}
 
 const accountValidation = Joi.object({
 
@@ -16,7 +43,7 @@ export default [
     {
         method: 'GET',
         path: '/accounts/{_id}',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.getAccountById(req)
+        handler: async(req: Hapi.Request & getAccountByIdRequest, h: ResponseToolkit) => AccountController.getAccountById(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -36,7 +63,7 @@ export default [
     {
         method: 'GET',
         path: '/accounts',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.getAccounts(req)
+        handler: async(req: Hapi.Request & getAccountsRequest, h: ResponseToolkit) => AccountController.getAccounts(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -53,7 +80,7 @@ export default [
     {
         method: 'POST',
         path: '/accounts',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.createAccount(req)
+        handler: async(req: Hapi.Request & createAccountRequest, h: ResponseToolkit) => AccountController.createAccount(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -68,7 +95,7 @@ export default [
     {
         method: 'PATCH',
         path: '/accounts/{_id}',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.updateAccount(req)
+        handler: async(req: Hapi.Request & updateAccountRequest, h: ResponseToolkit) => AccountController.updateAccount(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -87,7 +114,7 @@ export default [
     {
         method: 'DELETE',
         path: '/accounts/{_id}',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => AccountController.deleteAccount(req)
+        handler: async(req: Hapi.Request & deleteAccountRequest, h: ResponseToolkit) => AccountController.deleteAccount(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {

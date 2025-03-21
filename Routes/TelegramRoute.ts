@@ -79,7 +79,7 @@ GNBot.on('callback_query', async (payload) => {
                             nextSendAt: nextDate.toDate(),
                             type: key,
                             threadId: String(threadId)
-                        })
+                        } as IScheduleEvent)
                     }
                 }
                 // Sunday service start timer
@@ -93,7 +93,7 @@ GNBot.on('callback_query', async (payload) => {
                             planItemName: 'Start Timer',
                             type: key,
                             threadId: String(threadId)
-                        })
+                        } as IScheduleEvent)
                     }
                 }
     

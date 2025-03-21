@@ -1,8 +1,33 @@
 import Joi from '../joi.js'
 import ContactsController from '../Controllers/ContactsController.js'
 import UnFx from '../Other/UniversalFunctions.js'
+// Type imports
 import type { ResponseToolkit } from '@hapi/hapi'
 import type Hapi from '@hapi/hapi'
+import type { IContactModel } from 'Models/ContactModel.js'
+
+export type getContactByIdRequest = {
+    params: {
+        _id: string,
+    }
+}
+
+export type createContactRequest = {
+    payload: IContactModel
+}
+
+export type updateContactRequest = {
+    params: {
+        _id: string
+    },
+    payload: Partial<IContactModel>
+}
+
+export type deleteContactRequest = {
+    params: {
+        _id: string
+    }
+}
 
 const contactValidation = Joi.object({
 
@@ -16,7 +41,7 @@ export default [
     {
         method: 'GET',
         path: '/contacts/{_id}',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.getContactById(req)
+        handler: async(req: Hapi.Request & getContactByIdRequest, h: ResponseToolkit) => ContactsController.getContactById(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -53,7 +78,7 @@ export default [
     {
         method: 'POST',
         path: '/contacts',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.createContact(req)
+        handler: async(req: Hapi.Request & createContactRequest, h: ResponseToolkit) => ContactsController.createContact(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -68,7 +93,7 @@ export default [
     {
         method: 'PATCH',
         path: '/contacts/{_id}',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.updateContact(req)
+        handler: async(req: Hapi.Request & updateContactRequest, h: ResponseToolkit) => ContactsController.updateContact(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
@@ -87,7 +112,7 @@ export default [
     {
         method: 'DELETE',
         path: '/contacts/{_id}',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => ContactsController.deleteContact(req)
+        handler: async(req: Hapi.Request & deleteContactRequest, h: ResponseToolkit) => ContactsController.deleteContact(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {
