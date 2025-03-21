@@ -49,17 +49,17 @@ const check = async () => {
             console.warn('Failed to send Sunday Service reminder, no plan set!!!')
         }else {
             const res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id)
-            const allSongs = res.data.data.filter((item: any) => item.attributes.item_type === 'song')
+            const allSongs = res.data.data.filter(item => item?.attributes?.item_type === 'song')
             if(!allSongs?.length){
                 console.warn('Failed to send Sunday Service reminder, no songs at plan',nextSundayPlan?.attributes?.dates)
             }
             const template = handlebars.compile(SundayServiceTemplate)
             const message = template({
                 date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
-                songs: allSongs.map((song: any) => {
+                songs: allSongs.map(song => {
                     return {
-                        title: song.attributes.title,
-                        description: song.attributes.description
+                        title: song?.attributes?.title,
+                        description: song?.attributes?.description
                     }
                 })
             })
