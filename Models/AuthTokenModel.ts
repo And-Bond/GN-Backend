@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 type ObjectId = mongoose.Types.ObjectId
 import type { Document } from 'mongoose'
 
-export interface IAuthTokenModal extends Document {
+export interface IAuthTokenModel extends Document {
     _id: ObjectId;
     accessToken: string,
     contactId?: ObjectId,
@@ -10,7 +10,7 @@ export interface IAuthTokenModal extends Document {
 }
 
 
-const AuthTokenSchema = new mongoose.Schema<IAuthTokenModal>({
+const AuthTokenSchema = new mongoose.Schema<IAuthTokenModel>({
     accessToken: {
         type: String,
         required: true

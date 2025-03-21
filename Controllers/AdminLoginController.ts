@@ -3,9 +3,9 @@ import bcrypt from 'bcrypt'
 import Services from '../Services/index.js'
 // Type imports
 import type Hapi from '@hapi/hapi'
-import { IContactModel } from 'Models/ContactModel.js'
 import mongoose from 'mongoose'
-import { loginAdminRequest } from 'Routes/AdminLoginRoute.js'
+import type { loginAdminRequest } from 'Routes/AdminLoginRoute.js'
+import type { IAuthTokenModel } from 'Models/AuthTokenModel.js'
 const ObjectId = mongoose.Types.ObjectId
 
 const { JWT_SECRET } = process.env
@@ -29,7 +29,7 @@ export default {
         }
 
         const token = jwt.sign({ _id: contact._id, createdAt: Date.now() }, JWT_SECRET)
-        await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token })
+        await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token } as IAuthTokenModel)
 
         return { contact: contact, accessToken: token }
     },
