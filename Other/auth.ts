@@ -8,8 +8,7 @@ import type Joi from 'joi';
 const validate = async (decoded: {[key: string]: any}, req: Hapi.Request) => {
     try {
         // Check later
-        // @ts-ignore
-        const accessToken = req.auth.token
+        const accessToken = req.auth.credentials.token
         if (!decoded || !decoded._id || !accessToken) {
             return { isValid: false };
         }

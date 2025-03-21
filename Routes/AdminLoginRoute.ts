@@ -4,11 +4,18 @@ import AdminLoginController from '../Controllers/AdminLoginController.js'
 import type { ResponseToolkit } from '@hapi/hapi'
 import type Hapi from '@hapi/hapi'
 
+export type loginAdminRequest = {
+    payload: {
+        email: string,
+        password: string
+    }
+}
+
 export default [
     {
         method: 'POST',
         path: '/admin/login',
-        handler: async(req: Hapi.Request, h: ResponseToolkit) => AdminLoginController.loginAdmin(req)
+        handler: async(req: Hapi.Request & loginAdminRequest, h: ResponseToolkit) => AdminLoginController.loginAdmin(req)
         .then(res => UnFx.sendSuccess(res, h))
         .catch(err => UnFx.sendError(err, h)),
         options: {

@@ -5,6 +5,7 @@ import Services from '../Services/index.js'
 import type Hapi from '@hapi/hapi'
 import { IContactModel } from 'Models/ContactModel.js'
 import mongoose from 'mongoose'
+import { loginAdminRequest } from 'Routes/AdminLoginRoute.js'
 const ObjectId = mongoose.Types.ObjectId
 
 const { JWT_SECRET } = process.env
@@ -14,7 +15,7 @@ if(!JWT_SECRET){
 }
 
 export default {
-    loginAdmin: async (req: Hapi.Request & { payload: { email: string, password: string } }) => {
+    loginAdmin: async (req: Hapi.Request & loginAdminRequest ) => {
         const { email, password } = req.payload
         const contact = await Services.ContactService.getOne({ email: email })
 
@@ -33,7 +34,7 @@ export default {
         return { contact: contact, accessToken: token }
     },
     loginAdminViaAccessToken: async(req: Hapi.Request) => {
-        const { token } = req.auth
+        const { token } = req.auth.credentials
         const tokenExists = await Services.AuthTokenService.getOne({ accessToken: token })
         if(!tokenExists){
             throw {
@@ -54,8 +55,8 @@ export default {
         return { contact: contact, accessToken: token }
     },
     logoutAdmin: async(req: Hapi.Request) => {
-        const accessToken = req.auth.token
-        await Services.AuthTokenService.deleteOne({ accessToken: accessToken })
+        const { token } = req.auth.credentials
+        await Services.AuthTokenService.deleteOne({ accessToken: token })
         return { message: 'Successfully logged out' }
     }
 }
