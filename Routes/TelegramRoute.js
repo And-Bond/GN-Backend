@@ -143,7 +143,7 @@ module.exports = [
                         if (FOUND_BODY === false) {
                             const presentationId = (await ProPresenterService.getActivePresentation())?.data?.presentation?.id?.uuid
                             await ProPresenterService.trgSpecSlide(presentationId, 1)
-                            await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
+                            // await setTimeout(() => ProPresenterService.trgSpecSlide(presentationId, 0), 45 * 1000)
                             
                             await TelegramService.sendMessage({
                                 chatId: adminChatId, 
