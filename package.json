@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start:ts": "tsc --watch",
-    "start": "copyfiles -u 1 \"Templates/**/*.html\" dist/Templates && nodemon -r dotenv/config dist/server.js",
+    "start": "concurrently -k \"tsc --watch\" \"copyfiles -u 1 \"Templates/**/*.html\" dist/Templates && nodemon -r dotenv/config dist/server.js\"",
     "start:ngrok": "node scripts/start-ngrok.js",
     "prod": "pm2-runtime start dist/server.js --name gn-backend"
   },
