@@ -25,6 +25,11 @@ const init = async () => {
     const server = Hapi.server({
         port: API_HOST,        // Set the port
         host: NODE_ENV === 'LOCAL' ? API_PATH : '0.0.0.0', // Set the host
+        routes: {
+            cors: {
+                origin: ['*']
+            }
+        }
     });
 
     // Register all plugins
