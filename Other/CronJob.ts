@@ -94,7 +94,7 @@ const check = async () => {
                 }
             }
         }
-    } catch(err) {
+    } catch(err: any) {
         console.error('CRON JOB EXECUTE ERROR', err?.message || err)
     }
 }
