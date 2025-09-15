@@ -23,6 +23,10 @@ const auth = {
     password: PLANNING_CENTER_SECRET_TOKEN
 }
 
+if(!PLANNING_CENTER_CLIENT_ID || !PLANNING_CENTER_SECRET_TOKEN){
+    console.warn('IMPORTANT PLANNING CENTER ENV IS MISSING! YOU WON\'T BE ABLE TO WORK WITH PC!')
+}
+
 const api = axios.create({
     baseURL: path,
     auth: auth
