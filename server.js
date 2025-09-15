@@ -73,4 +73,4 @@ process.on('unhandledRejection', (err) => {
 
 // Initialize the server
 init()
-console.log('Release Date: ', Date.now()) 
+console.log('Release Date: ', new Date()) 
