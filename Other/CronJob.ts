@@ -1,15 +1,19 @@
-const cron = require('node-cron'),
-    constants = require('../Other/constants'),
-    fs = require('fs'),
-    handlebars = require('../Templates/HandelBars'),
-    path = require('path'),
-    moment = require('moment')
+import cron from 'node-cron'
+import constants from '../Other/constants.js'
+import fs from 'fs'
+import handlebars from '../Templates/HandelBars.js'
+import path from 'path'
+import moment from 'moment'
 
-const TelegramUserService = require('../Services/TelegramUserService')
-const ScheduleEventsService = require('../Services/ScheduleEventsService')
-const PlanningCenterService = require('../Services/PlanningCenterService')
-const TelegramService = require('../Services/TelegramService')
+import ScheduleEventsService from '../Services/ScheduleEventsService.js'
+import PlanningCenterService from '../Services/PlanningCenterService.js'
+import TelegramService from '../Services/TelegramService.js'
+import { fileURLToPath } from 'url';
+// Type imports
+import type TelegramBot from 'node-telegram-bot-api'
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const SundayServiceTemplate = fs.readFileSync(path.resolve(__dirname, '../Templates/SundayService.html'), 'utf-8')
 
 console.log('\n-------------------CRON--------------------\n')
@@ -36,7 +40,7 @@ const check = async () => {
         // Sunday Service Reminder
         let sundayService = allSchedules.filter(sc => sc.type === constants.ScheduleServiceTypesCode.SUNDAY_SERVICE_REMINDER)
         if(sundayService.length){
-            const plans = await PlanningCenterService.getPlansList(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,{
+            const plans = await PlanningCenterService.getPlansList(constants.PlanningCenterServiceIds.SUNDAY_SERVICE, {
                 order: 'sort_date',
                 filter: 'future',
                 per_page: 1
@@ -45,8 +49,8 @@ const check = async () => {
             if(!nextSundayPlan || moment(nextSundayPlan?.attributes?.sort_date).isBefore(moment())){
                 console.warn('Failed to send Sunday Service reminder, no plan set!!!')
             }else {
-                res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id)
-                const allSongs = res.data.data.filter(item => item.attributes.item_type === 'song')
+                const res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id)
+                const allSongs = res.data.data.filter(item => item?.attributes?.item_type === 'song')
                 if(!allSongs?.length){
                     console.warn('Failed to send Sunday Service reminder, no songs at plan',nextSundayPlan?.attributes?.dates)
                 }
@@ -55,19 +59,19 @@ const check = async () => {
                     date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
                     songs: allSongs.map(song => {
                         return {
-                            title: song.attributes.title,
-                            description: song.attributes.description
+                            title: song?.attributes?.title,
+                            description: song?.attributes?.description
                         }
                     })
                 })
         
                 for(let schedule of sundayService){
                     try{
-                        let payload = { chatId: schedule.chatId, message, parseMode: 'HTML' }
+                        let options: TelegramBot.SendMessageOptions = { parse_mode: 'HTML' }
                         if(schedule.threadId){
-                            payload['messageThreadId'] = schedule.threadId
+                            options['message_thread_id'] = Number(schedule.threadId)
                         }
-                        await TelegramService.sendMessage(payload)
+                        await TelegramService.sendMessage(schedule.chatId!, message, options)
                         // Hard code every thursday
                         const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
                         if(moment().utc().isAfter(nextTimeSchedule)){
@@ -90,7 +94,7 @@ const check = async () => {
                 }
             }
         }
-    } catch(err) {
+    } catch(err: any) {
         console.error('CRON JOB EXECUTE ERROR', err?.message || err)
     }
 }

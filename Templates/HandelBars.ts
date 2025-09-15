@@ -1,7 +1,7 @@
-const handlebars = require('handlebars')
+import handlebars from 'handlebars'
 
 handlebars.registerHelper('add', function (a, b) {
   return a + b;
 });
 
-module.exports = handlebars;
+export default handlebars
