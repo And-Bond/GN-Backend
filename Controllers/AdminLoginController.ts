@@ -33,7 +33,7 @@ export default {
         }
 
         const token = jwt.sign({ _id: contact._id, createdAt: Date.now() }, JWT_SECRET)
-        await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token })
+        await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token } as IAuthTokenModel)
 
         return { contact: contact, accessToken: token }
     },
