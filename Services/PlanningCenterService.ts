@@ -42,7 +42,7 @@ const getOrganizationPeople = async () => api.get('/people')
 const getServiceTypes = async () => api.get('/service_types')
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/plan
-const getPlansList = async (serviceTypeId: string, params: any): defaultResponse<Plan> => api.get('/service_types/' + serviceTypeId + '/plans', {
+const getPlansList = async (serviceTypeId: string, params?: any): defaultResponse<Plan> => api.get('/service_types/' + serviceTypeId + '/plans', {
     params: params
 })
 

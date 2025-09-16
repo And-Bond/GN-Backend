@@ -23,13 +23,17 @@ export default {
             throw 'No contact with such email found!'
         }
 
+        if(!contact.auth?.email){
+            throw 'Contact has no auth!'
+        }
+
         const isPasswordValid = await bcrypt.compare(password, contact.auth.password)
         if(!isPasswordValid){
             throw 'Invalid password'
         }
 
         const token = jwt.sign({ _id: contact._id, createdAt: Date.now() }, JWT_SECRET)
-        await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token } as IAuthTokenModel)
+        await Services.AuthTokenService.create({ contactId: contact._id, accessToken: token })
 
         return { contact: contact, accessToken: token }
     },
