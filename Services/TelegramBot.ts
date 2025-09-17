@@ -1,38 +1,29 @@
-// src/Services/TelegramBot.ts
 import TelegramBot from 'node-telegram-bot-api';
 
-const { TELEGRAM_BOT_TOKEN_GN, TELEGRAM_ALLOWED_PHONES } = process.env;
+const { TELEGRAM_BOT_TOKEN_GN } = process.env;
 
 if (!TELEGRAM_BOT_TOKEN_GN) {
   throw new Error('TELEGRAM_BOT_TOKEN_GN is missing');
 }
 
-// ===== helpers =====
 const normalizePhone = (raw: string) => (raw || '').replace(/[^\d]/g, '');
 
-// Локальний список (фолбек)
 const TgPhoneUsers = [
   '+380663309198',
 ];
 
-// Формуємо whitelist з ENV або з локального масиву й НОРМАЛІЗУЄМО його
 const ALLOWED_SET = new Set(
-  (TELEGRAM_ALLOWED_PHONES || TgPhoneUsers.join(','))
+  (TgPhoneUsers.join(','))
     .split(',')
     .map(s => s.trim())
     .filter(Boolean)
     .map(normalizePhone)
 );
 
-// ===== bot & state =====
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN_GN, { polling: true });
 
-// Зберігаємо лише ВЕРИФІКОВАНІ chat.id
 const VERIFIED_SUBSCRIBERS = new Set<number>();
 
-// ===== handlers =====
-
-// /start -> попросити контакт
 bot.onText(/^\/start$/, async (msg) => {
   const opts: TelegramBot.SendMessageOptions = {
     reply_markup: {
@@ -49,7 +40,6 @@ bot.onText(/^\/start$/, async (msg) => {
   );
 });
 
-// контакт -> перевірка у whitelist
 bot.on('contact', async (msg) => {
   const chatId = msg.chat.id;
   const phone = msg.contact?.phone_number;
@@ -82,12 +72,10 @@ bot.on('contact', async (msg) => {
   }
 });
 
-// /ping -> перевірка
 bot.onText(/^\/ping$/, async (msg) => {
   await bot.sendMessage(msg.chat.id, 'pong');
 });
 
-// /whoami -> статус
 bot.onText(/^\/whoami$/, async (msg) => {
   const verified = VERIFIED_SUBSCRIBERS.has(msg.chat.id);
   await bot.sendMessage(
@@ -96,7 +84,6 @@ bot.onText(/^\/whoami$/, async (msg) => {
   );
 });
 
-// ===== розсилка тільки ВЕРИФІКОВАНИМ =====
 export async function notifyAll(text: string) {
   const ids = Array.from(VERIFIED_SUBSCRIBERS);
   await Promise.allSettled(ids.map((id) => bot.sendMessage(id, text)));
