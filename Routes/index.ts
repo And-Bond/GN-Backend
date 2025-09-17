@@ -5,6 +5,7 @@ import planningCenterRoute from './PlanningCenterRoute.js'
 import contactRoute from './ContactRoute.js'
 import accountRoute from './AccountRoute.js'
 import adminLoginRoute from './AdminLoginRoute.js'
+import formRoutes from './FormRoutes.js';
 
 // type Route = Hapi.ReqRefDefaults
 
@@ -14,5 +15,6 @@ export default <any>[
     ...planningCenterRoute,
     ...contactRoute,
     ...accountRoute,
-    ...adminLoginRoute
+    ...adminLoginRoute,
+    ...formRoutes
 ]
