@@ -4,6 +4,7 @@ type ObjectId = mongoose.Types.ObjectId
 
 export interface ISubscriber {
     _id: ObjectId;
+    tg_name: string;
     chat_id: string;
     phone: string;
     active: boolean;
@@ -13,6 +14,10 @@ export interface ISubscriber {
 
 const Subscriber = new Schema<ISubscriber>({
     chat_id: {
+        type: String,
+        required: true
+    },
+    tg_name: {
         type: String,
         required: true
     },
