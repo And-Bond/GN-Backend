@@ -21,9 +21,9 @@ export default {
         LIVE_UPDATED: 'services.v2.events.plan.live.updated'
     },
     TgPhoneUsers: [
-        "380663309198",
-        "380631152409",
-        "380681042287",
+        "380663309198", // Alex Havrysh
+        "380631152409", // Igor Sokyreko
+        "380681042287", // Bond
     ],
     BotName: BotName
 }
