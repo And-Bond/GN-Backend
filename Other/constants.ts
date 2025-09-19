@@ -20,5 +20,10 @@ export default {
         PLAN_CREATED: 'services.v2.events.plan.created',
         LIVE_UPDATED: 'services.v2.events.plan.live.updated'
     },
+    TgPhoneUsers: [
+        "380663309198",
+        "380631152409",
+        "380681042287",
+    ],
     BotName: BotName
 }
