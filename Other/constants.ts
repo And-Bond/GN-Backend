@@ -20,5 +20,10 @@ export default {
         PLAN_CREATED: 'services.v2.events.plan.created',
         LIVE_UPDATED: 'services.v2.events.plan.live.updated'
     },
+    TgPhoneUsers: [
+        "380663309198", // Alex Havrysh
+        "380631152409", // Igor Sokyreko
+        "380502591405", // Alex Datsyk
+    ],
     BotName: BotName
 }
