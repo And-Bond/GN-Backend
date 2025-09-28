@@ -27,7 +27,7 @@ const init = async () => {
         host: NODE_ENV === 'LOCAL' ? API_PATH : '0.0.0.0', // Set the host
         routes: {
             cors: {
-                origin: ['*', 'https://good-news-church-edfaa.web.app']
+                origin: ['*']
             }
         }
     });
