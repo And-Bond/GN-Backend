@@ -1,5 +1,5 @@
 import type Hapi from '@hapi/hapi';
-import { notifyAll } from '../Services/TelegramBot.js';
+// import { notifyAll } from '../Services/TelegramBot.js';
 
 export type PrayerPayload = { name?: string; description?: string };
 export type ServePayload  = { name?: string; phone?: string };
@@ -15,7 +15,7 @@ export default {
     }
 
     try {
-      await notifyAll(`🙏 Нова молитва\nВід: ${name}\nТекст: ${description}`);
+      // await notifyAll(`🙏 Нова молитва\nВід: ${name}\nТекст: ${description}`);
       return h.response({ ok: true }).code(200);
     } catch (err) {
       console.error('FormsController.prayer error:', err);
@@ -33,7 +33,7 @@ export default {
     }
 
     try {
-      await notifyAll(`🤝 Хочу послужити\nВід: ${name}\nТелефон: ${phone}`);
+      // await notifyAll(`🤝 Хочу послужити\nВід: ${name}\nТелефон: ${phone}`);
       return h.response({ ok: true }).code(200);
     } catch (err) {
       console.error('FormsController.serve error:', err);
