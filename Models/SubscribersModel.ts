@@ -4,12 +4,13 @@ type ObjectId = mongoose.Types.ObjectId
 
 export interface ISubscriber {
     _id: ObjectId;
-    tg_name: string;
+    tg_name?: string;
     chat_id: string;
-    phone: string;
+    phone?: string; 
     active: boolean;
-    createdAt: Date
-    updatedAt: Date
+    env: 'dev' | 'prod';
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const Subscriber = new Schema<ISubscriber>({
@@ -19,21 +20,27 @@ const Subscriber = new Schema<ISubscriber>({
     },
     tg_name: {
         type: String,
-        required: true
+        required: false
     },
     phone: {
         type: String,
-        required: true
+        required: false
     },
     active: {
         type: Boolean,
-        default: true
+        default: false
     },
+    env: {
+        type: String,
+        enum: ['dev', 'prod'],
+        required: true
+    }
 },
 {
     timestamps: true
-}
-)
+})
+
+Subscriber.index({ chat_id: 1, env: 1 }, { unique: true });
 
 const SubscribersModel = mongoose.model('subscribers_tg_bot_gn', Subscriber)
 
