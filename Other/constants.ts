@@ -22,8 +22,6 @@ export default {
     },
     TgPhoneUsers: [
         "380663309198", // Alex Havrysh
-        "380631152409", // Igor Sokyreko
-        "380502591405", // Alex Datsyk
     ],
     TgPhoneUsersDev: [
         "380663309198", // Alex Havrysh
