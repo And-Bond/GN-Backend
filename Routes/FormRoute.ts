@@ -10,7 +10,7 @@ const routes: ServerRoute[] = [
   },
   {
     method: 'POST',
-    path: '/forms/serve',
+    path: '/forms/charity',
     options: { auth: false },
     handler: FormsController.serve,
   },
