@@ -22,6 +22,7 @@ export default {
     },
     TgPhoneUsers: [
         "380663309198", // Alex Havrysh
+        "380676588536" // Valua Kolomiec
     ],
     TgPhoneUsersDev: [
         "380663309198", // Alex Havrysh
