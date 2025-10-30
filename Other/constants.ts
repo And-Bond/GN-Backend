@@ -24,7 +24,8 @@ export default {
         "380663309198", // Alex Havrysh
         "380676588536", // Valua Kolomiec
         "380502591405", // Alex Datsyk
-        "380931866487" // Good news contact
+        "380931866487", // Good news contact
+        "380636561274", // Anna Hyshporenko
     ],
     TgPhoneUsersDev: [
         "380663309198", // Alex Havrysh
