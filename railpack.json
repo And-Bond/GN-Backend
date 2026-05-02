@@ -2,5 +2,8 @@
     "$schema": "https://schema.railpack.com",
     "deploy": {
       "startCommand": "npm run prod"
+    },
+    "build": {
+      "command": "true"
     }
   }
