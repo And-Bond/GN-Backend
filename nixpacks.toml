@@ -1,6 +1,0 @@
-[phases]
-[phases.setup]
-cmds = ["npm install --omit=dev"]
-
-[start]
-cmd = "npm run prod"
