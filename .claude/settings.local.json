@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.planningcenteronline.com)",
+      "WebFetch(domain:developer.planning.center)"
+    ]
+  }
+}

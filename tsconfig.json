@@ -11,6 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "baseUrl": "./",
+    "sourceMap": true,
+    "inlineSources": true
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]

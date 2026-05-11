@@ -1,7 +1,7 @@
 
 import axios from 'axios'
 // Type imports
-import type { Plan, Item } from 'types/planning-center.js'
+import type { Plan, Item, Team, People, PlanPerson } from 'types/planning-center.js'
 
 
 type defaultResponse<T> = Promise<{
@@ -52,7 +52,7 @@ const getOrganizationSongs = async (params: any) => api.get('/songs', {
 })
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/team
-const getOrganizationTeams = async () => api.get('/teams')
+const getOrganizationTeams = async (): defaultResponse<Team> => api.get('/teams?include=people')
 
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/series
 const getSeries = async () => api.get('/series')
@@ -82,6 +82,11 @@ const getAttachmentFileUrl = async (attachmentId: string) => api.post(`attachmen
 
 const getArrangementsBySong = async (songId: string) => api.get(`songs/${songId}/arrangements`)
 
+const getPlanTeamMembers = async (serviceTypeId: string, planId: string): defaultResponse<PlanPerson> => api.get(`/service_types/${serviceTypeId}/plans/${planId}/team_members?include=team`)
+
+const getPlanPeople = async (personId: string): defaultResponse<PlanPerson> => api.get(`/people/${personId}/plan_people`)
+
+
 export default {
     getOrganizationInfo,
     getOrganizationPeople,
@@ -97,5 +102,7 @@ export default {
     getPlanItemArrangments,
     getAttachmentsBySongArrangement,
     getAttachmentFileUrl,
-    getArrangementsBySong
+    getArrangementsBySong,
+    getPlanPeople,
+    getPlanTeamMembers
 }

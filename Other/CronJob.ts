@@ -1,7 +1,7 @@
 import cron from 'node-cron'
 import constants from '../Other/constants.js'
 import fs from 'fs'
-import handlebars from '../Templates/HandelBars.js'
+import handlebars from '../Templates/HandleBars.js'
 import path from 'path'
 import moment from 'moment'
 
@@ -55,12 +55,30 @@ const check = async () => {
                     console.warn('Failed to send Sunday Service reminder, no songs at plan',nextSundayPlan?.attributes?.dates)
                 }
                 const template = handlebars.compile(SundayServiceTemplate)
-                const message = template({
+
+
+                const orgTeams = await PlanningCenterService.getOrganizationTeams()
+                // ! Hardcoded
+                const mediaTeam = orgTeams.data?.data?.find(team => team.attributes?.name === constants.PlanningCenterTeamNames.MEDIA)
+                
+                const planPeople = await PlanningCenterService.getPlanTeamMembers(constants.PlanningCenterServiceIds.SUNDAY_SERVICE, nextSundayPlan?.id)
+                const allMediaTeamPeople = planPeople.data?.data?.filter(person => person.relationships?.team?.data?.id === mediaTeam?.id)
+
+                const songsMessage = template({
                     date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
                     songs: allSongs.map(song => {
                         return {
                             title: song?.attributes?.title,
                             description: song?.attributes?.description
+                        }
+                    }),
+                })
+                const mediaTeamMessage = template({
+                    date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
+                    mediaMembers: allMediaTeamPeople.map(member => {
+                        return {
+                            name: member.attributes?.name,
+                            position: member.attributes?.team_position_name
                         }
                     })
                 })
@@ -71,7 +89,8 @@ const check = async () => {
                         if(schedule.threadId){
                             options['message_thread_id'] = Number(schedule.threadId)
                         }
-                        await TelegramService.sendMessage(schedule.chatId!, message, options)
+                        await TelegramService.sendMessage(schedule.chatId!, songsMessage, options)
+                        await TelegramService.sendMessage(schedule.chatId!, mediaTeamMessage, options)
                         // Hard code every thursday
                         const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
                         if(moment().utc().isAfter(nextTimeSchedule)){

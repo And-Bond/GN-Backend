@@ -1,8 +1,19 @@
 <b>Недільне служіння {{date}}</b>
+{{#if songs.length}}
 
 <b>Список пісень:</b>
 {{#each songs}}
 
 <b>{{add @index 1}}. {{this.title}}</b>
- <i>{{this.description}}</i>
+<i>{{this.description}}</i>
 {{/each}}
+{{/if}}
+
+{{#if mediaMembers.length}}
+<b>Список медіа служителів:</b>
+{{#each mediaMembers}}
+
+<b>{{this.position}}</b>
+<i>{{this.name}}</i>
+{{/each}}
+{{/if}}
