@@ -5,11 +5,9 @@ type ObjectId = mongoose.Types.ObjectId
 export interface ITelegramUser {
     _id: ObjectId;
     userId: string,
+    planningCenterId?: string
+    telegramPhone?: string
     active?: boolean,
-    auth?: {
-        name?: string,
-        password?: string
-    },
     lastMessageAt?: Date
 }
 
@@ -18,11 +16,9 @@ const TelegramUser = new Schema<ITelegramUser>({
         type: String,
         required: true
     },
+    planningCenterId: String,
+    telegramPhone: String,
     active: Boolean,
-    auth: {
-        name: String,
-        password: String
-    },
     lastMessageAt: Date
 })
 

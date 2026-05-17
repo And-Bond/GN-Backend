@@ -32,6 +32,11 @@ const api = axios.create({
     auth: auth
 })
 
+const peopleApi = axios.create({
+    baseURL: 'https://api.planningcenteronline.com/people/v2',
+    auth: auth
+})
+
 // https://developer.planning.center/docs/#/apps/services/2018-11-01/vertices/organization
 const getOrganizationInfo = async () => api.get('/')
 
@@ -86,6 +91,11 @@ const getPlanTeamMembers = async (serviceTypeId: string, planId: string): defaul
 
 const getPlanPeople = async (personId: string): defaultResponse<PlanPerson> => api.get(`/people/${personId}/plan_people`)
 
+// https://developer.planning.center/docs/#/apps/people/2023-03-21/vertices/phone_number
+const searchPersonByPhone = async (phoneNumber: string) => peopleApi.get('/phone_numbers', {
+    params: { 'where[number]': phoneNumber, include: 'person' }
+})
+
 
 export default {
     getOrganizationInfo,
@@ -104,5 +114,6 @@ export default {
     getAttachmentFileUrl,
     getArrangementsBySong,
     getPlanPeople,
-    getPlanTeamMembers
+    getPlanTeamMembers,
+    searchPersonByPhone
 }

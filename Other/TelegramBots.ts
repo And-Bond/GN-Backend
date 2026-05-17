@@ -64,12 +64,13 @@ const initTelegramBot = async () => {
   try {
     await start()
   } catch (error: any) {
-    console.error('Error starting Telegram Bot:', error.message || error.errors);
     errorCounter++
+    console.error(`Error starting Telegram Bot (attempt ${errorCounter}):`, error.message || error.errors);
     if(errorCounter > 3){
       console.error('Failed to start Telegram Bot after 3 attempts. Last known error:', error.message || error.errors);
       return
     }
+    await new Promise(resolve => setTimeout(resolve, 3000))
     await initTelegramBot()
   }
 };
@@ -93,6 +94,11 @@ const canReactOnMessage = (payload: TelegramBot.Update): false | TelegramBot.Upd
       chat = payload.callback_query.message?.chat
       break
     }
+  }
+
+  // Allow contact messages through (no text field)
+  if (payload.message?.contact) {
+    return payload
   }
 
   if(!message || !chat){

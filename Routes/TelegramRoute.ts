@@ -3,6 +3,7 @@ import constants from '../Other/constants.js'
 import ScheduleEventsService from '../Services/ScheduleEventsService.js'
 import TelegramService from '../Services/TelegramService.js'
 import PlanningCenterService from '../Services/PlanningCenterService.js'
+import TelegramUserService from '../Services/TelegramUserService.js'
 
 import { GNBot, canReactOnMessage } from '../Other/TelegramBots.js'
 const { NODE_ENV, TELEGRAM_WEBHOOK_SECRET_TOKEN } = process.env
@@ -11,6 +12,66 @@ import type Hapi from '@hapi/hapi'
 import type TelegramBot from 'node-telegram-bot-api'
 import type { FilterQuery } from 'mongoose'
 import type { IScheduleEvent } from '../Models/ScheduleEventsModel.js'
+
+// /start command
+GNBot.onText(/\/start/, async (payload: TelegramBot.Message) => {
+    try {
+        const chat = payload.chat
+        const options: TelegramBot.SendMessageOptions = {
+            reply_markup: {
+                keyboard: [[{ text: '📱 Поділитись номером', request_contact: true }]],
+                resize_keyboard: true,
+                one_time_keyboard: true
+            }
+        }
+        await TelegramService.sendMessage(chat.id, 'Привіт, цей бот буде відсилати актуальну інформацію про спільноту та твої служіння, для того щоб почати потрібно поділитися номером телефону', options)
+    } catch (err) {
+        console.error('ERROR /start HANDLER', err)
+    }
+})
+
+// Contact shared handler
+GNBot.on('contact', async (payload: TelegramBot.Message) => {
+    try {
+        const contact = payload.contact!
+        const chat = payload.chat
+        const from = payload.from!
+
+        let planningCenterId: string | undefined
+        try {
+            const pcResult = await PlanningCenterService.searchPersonByPhone(contact.phone_number)
+            const phoneRecords: any[] = pcResult.data?.data ?? []
+            if (phoneRecords.length) {
+                planningCenterId = phoneRecords[0].relationships?.person?.data?.id
+            }
+        } catch (err) {
+            console.error('PC phone search error', err)
+        }
+
+        await TelegramUserService.updateOne(
+            { userId: String(from.id) },
+            {
+                $set: {
+                    userId: String(from.id),
+                    telegramPhone: contact.phone_number,
+                    lastMessageAt: new Date(),
+                    ...(planningCenterId ? { planningCenterId } : {})
+                }
+            },
+            { upsert: true }
+        )
+
+        const replyText = planningCenterId
+            ? 'Вітаю! Знайшов тебе в Planning Center ✅'
+            : 'Номер збережено, але не знайшов тебе в Planning Center'
+
+        await TelegramService.sendMessage(chat.id, replyText, {
+            reply_markup: { remove_keyboard: true }
+        })
+    } catch (err) {
+        console.error('ERROR CONTACT HANDLER', err)
+    }
+})
 
 // /reminder command
 GNBot.onText(/\/reminder/, async (payload: TelegramBot.Message) => {

@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:api.planningcenteronline.com)",
-      "WebFetch(domain:developer.planning.center)"
+      "WebFetch(domain:developer.planning.center)",
+      "Bash(Get-ChildItem -Path \"D:\\\\Projects\\\\GN-Backend\" -Force)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(ConvertTo-Json)",
+      "Bash(node -e \"const pkg = require\\('./node_modules/node-telegram-bot-api/package.json'\\); console.log\\(pkg.version\\)\")"
     ]
   }
 }
