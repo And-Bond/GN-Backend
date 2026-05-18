@@ -62,7 +62,7 @@ GNBot.on('contact', async (payload: TelegramBot.Message) => {
         )
 
         const replyText = planningCenterId
-            ? 'Вітаю! Знайшов тебе в Planning Center ✅'
+            ? 'Номер збережено, також зберіг тебе в Planning Center ✅'
             : 'Номер збережено, але не знайшов тебе в Planning Center'
 
         await TelegramService.sendMessage(chat.id, replyText, {
@@ -166,7 +166,22 @@ GNBot.on('callback_query', async (payload) => {
         if(!chat || !messageText || !messageId){
             return { data: false }
         }
-    
+
+        // RSVP response for Planning Center plan assignments
+        if (messageText.startsWith('PCRSVP:')) {
+            const [, status, planPersonId, planId, serviceTypeId] = messageText.split(':') as [string, 'C' | 'D', string, string, string]
+            try {
+                await PlanningCenterService.updatePlanPersonStatus(serviceTypeId, planId, planPersonId, status)
+                const replyText = status === 'C' ? 'Дякуємо! Підтверджено ✅' : 'Зрозуміло, відмічено ❌'
+                await TelegramService.editMessage(replyText, { chat_id: chat.id, message_id: messageId })
+            } catch (err) {
+                console.error('PCRSVP update error', err)
+                await TelegramService.editMessage('Сталася помилка, спробуйте пізніше.', { chat_id: chat.id, message_id: messageId })
+            }
+            GNBot.answerCallbackQuery(payload.id)
+            return
+        }
+
         for (const key in constants.ScheduleServiceTypesHuman) {
             // Check if it some schedule events type setting
             if(key === messageText){

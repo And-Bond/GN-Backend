@@ -2,6 +2,11 @@ import mongoose from "mongoose"
 const Schema = mongoose.Schema
 type ObjectId = mongoose.Types.ObjectId
 
+export interface ISentToPlan {
+    planId: string
+    sentAt: Date
+}
+
 export interface ITelegramUser {
     _id: ObjectId;
     userId: string,
@@ -9,6 +14,7 @@ export interface ITelegramUser {
     telegramPhone?: string
     active?: boolean,
     lastMessageAt?: Date
+    sentToPlans?: ISentToPlan[]
 }
 
 const TelegramUser = new Schema<ITelegramUser>({
@@ -19,7 +25,8 @@ const TelegramUser = new Schema<ITelegramUser>({
     planningCenterId: String,
     telegramPhone: String,
     active: Boolean,
-    lastMessageAt: Date
+    lastMessageAt: Date,
+    sentToPlans: [{ planId: String, sentAt: Date }]
 })
 
 

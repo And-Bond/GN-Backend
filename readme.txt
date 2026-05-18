@@ -1,2 +1,3 @@
-To set telegram bot commands:
+Команди для GN Bot
 reminder - Встановити нагадування
+start - Почати працювати з ботом

@@ -4,10 +4,10 @@ import axios from 'axios'
 import type { Plan, Item, Team, People, PlanPerson } from 'types/planning-center.js'
 
 
-type defaultResponse<T> = Promise<{
+type defaultResponse<MainType, Included = never> = Promise<{
     data: {
-        data: T[]
-    }
+        data: MainType[]
+    } & ([Included] extends [never] ? {} : { included: Included[] })
 }>
 
 const { PLANNING_CENTER_CLIENT_ID, PLANNING_CENTER_SECRET_TOKEN } = process.env
@@ -89,11 +89,30 @@ const getArrangementsBySong = async (songId: string) => api.get(`songs/${songId}
 
 const getPlanTeamMembers = async (serviceTypeId: string, planId: string): defaultResponse<PlanPerson> => api.get(`/service_types/${serviceTypeId}/plans/${planId}/team_members?include=team`)
 
-const getPlanPeople = async (personId: string): defaultResponse<PlanPerson> => api.get(`/people/${personId}/plan_people`)
+// https://api.planningcenteronline.com/docs/apps/services/versions/2018-11-01/vertices/plan_person
+const getPlanPeople = async (personId: string): defaultResponse<PlanPerson, Plan> => api.get(`/people/${personId}/plan_people?include=plan`)
+
+const updatePlanPersonStatus = async (serviceTypeId: string, planId: string, planPersonId: string, status: 'C' | 'D') =>
+    api.patch(`/service_types/${serviceTypeId}/plans/${planId}/team_members/${planPersonId}`, {
+        data: {
+            type: 'PlanPerson',
+            id: planPersonId,
+            attributes: { status }
+        }
+    })
+
+// Formats a raw phone number to PC's storage format: +380 96 463 8896
+const formatPhoneForPC = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length === 12 && digits.startsWith('380')) {
+        return `+${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`
+    }
+    return `+${digits}`
+}
 
 // https://developer.planning.center/docs/#/apps/people/2023-03-21/vertices/phone_number
 const searchPersonByPhone = async (phoneNumber: string) => peopleApi.get('/phone_numbers', {
-    params: { 'where[number]': phoneNumber, include: 'person' }
+    params: { 'where[number]': formatPhoneForPC(phoneNumber), include: 'person' }
 })
 
 
@@ -115,5 +134,6 @@ export default {
     getArrangementsBySong,
     getPlanPeople,
     getPlanTeamMembers,
-    searchPersonByPhone
+    searchPersonByPhone,
+    updatePlanPersonStatus
 }

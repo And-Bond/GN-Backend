@@ -8,6 +8,7 @@ import moment from 'moment'
 import ScheduleEventsService from '../Services/ScheduleEventsService.js'
 import PlanningCenterService from '../Services/PlanningCenterService.js'
 import TelegramService from '../Services/TelegramService.js'
+import TelegramUserService from '../Services/TelegramUserService.js'
 import { fileURLToPath } from 'url';
 // Type imports
 import type TelegramBot from 'node-telegram-bot-api'
@@ -111,6 +112,53 @@ const check = async () => {
                         continue
                     }
                 }
+            }
+        }
+        // Send RSVP notifications for upcoming plans
+        const usersWithPCId = await TelegramUserService.getMany({ planningCenterId: { $exists: true, $ne: null } })
+        for (const user of usersWithPCId) {
+            try {
+                const res = await PlanningCenterService.getPlanPeople(user.planningCenterId!)
+                const planPersons = res.data?.data ?? []
+                const includedPlans = res.data?.included ?? []
+
+                for (const planPerson of planPersons) {
+                    const planId = planPerson.relationships?.plan?.data?.id
+                    if (!planId) continue
+
+                    const plan = includedPlans.find(p => p.id === planId)
+                    if (!plan) continue
+
+                    // Only plans happening within 3 days
+                    if (moment(plan.attributes?.sort_date).isAfter(moment().add(3, 'days'))) continue
+
+                    // Skip past plans
+                    if (moment(plan.attributes?.sort_date).isBefore(moment())) continue
+
+                    // Skip if already notified
+                    if (user.sentToPlans?.some(s => s.planId === planId)) continue
+
+                    const serviceTypeId = planPerson.relationships?.service_type?.data?.id
+                    const position = planPerson.attributes?.team_position_name ?? '—'
+                    const date = moment(plan.attributes?.sort_date).format('DD.MM.YYYY')
+                    const text = `Привіт, нагадуємо що ти служиш на позиції: ${position} в ${date}. Просимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+
+                    await TelegramService.sendMessage(Number(user.userId), text, {
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: 'Так ✅', callback_data: `PCRSVP:C:${planPerson.id}:${planId}:${serviceTypeId}` },
+                                { text: 'Ні ❌',  callback_data: `PCRSVP:D:${planPerson.id}:${planId}:${serviceTypeId}` }
+                            ]]
+                        }
+                    })
+
+                    await TelegramUserService.updateOne(
+                        { _id: user._id },
+                        { $push: { sentToPlans: { planId, sentAt: new Date() } } }
+                    )
+                }
+            } catch (err: any) {
+                console.error(`[PC sync] failed for user ${user.userId}:`, err?.message)
             }
         }
     } catch(err: any) {
