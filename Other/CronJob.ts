@@ -116,6 +116,7 @@ const check = async () => {
         }
         // Send RSVP notifications for upcoming plans
         const usersWithPCId = await TelegramUserService.getMany({ planningCenterId: { $exists: true, $ne: null } })
+        const organizationServiceTypes = await PlanningCenterService.getServiceTypes()
         for (const user of usersWithPCId) {
             try {
                 const res = await PlanningCenterService.getPlanPeople(user.planningCenterId!)
@@ -132,6 +133,9 @@ const check = async () => {
                     const plan = includedPlans.find(p => p.id === planId)
                     if (!plan) continue
 
+                    const serviceType = organizationServiceTypes.data?.data?.find(s => s.id === plan?.relationships?.service_type?.data?.id)
+                    if(!serviceType) continue
+
                     // Only plans happening within 3 days
                     if (moment(plan.attributes?.sort_date).isAfter(moment().add(3, 'days'))) continue
 
@@ -144,7 +148,7 @@ const check = async () => {
                     const serviceTypeId = planPerson.relationships?.service_type?.data?.id
                     const position = planPerson.attributes?.team_position_name ?? '—'
                     const date = moment(plan.attributes?.sort_date).format('DD.MM.YYYY')
-                    const text = `Привіт, нагадуємо що ти служиш на позиції: ${position} в ${date}. Просимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+                    const text = `Привіт, нагадуємо що ти служиш: \n    \n${serviceType?.attributes?.name?.trim()} ${date} на позиції ${position}. \n\nПросимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
 
                     await TelegramService.sendMessage(Number(user.userId), text, {
                         reply_markup: {
@@ -170,4 +174,4 @@ const check = async () => {
 }
 
 cron.schedule('*/15 * * * *', check)
-check()
+// check()
