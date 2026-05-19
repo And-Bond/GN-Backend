@@ -123,6 +123,9 @@ const check = async () => {
                 const includedPlans = res.data?.included ?? []
 
                 for (const planPerson of planPersons) {
+                    // Only send if user not confirmed it yet
+                    if(planPerson?.attributes?.status !== 'U') continue
+
                     const planId = planPerson.relationships?.plan?.data?.id
                     if (!planId) continue
 
@@ -167,4 +170,4 @@ const check = async () => {
 }
 
 cron.schedule('*/15 * * * *', check)
-// check()
+check()
