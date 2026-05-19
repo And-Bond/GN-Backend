@@ -133,7 +133,7 @@ const check = async () => {
                     const plan = includedPlans.find(p => p.id === planId)
                     if (!plan) continue
 
-                    const serviceType = organizationServiceTypes.data?.data?.find(s => s.id === plan?.relationships?.service_type?.data?.id)
+                    const serviceType = organizationServiceTypes.data?.data?.find((s: any) => s.id === plan?.relationships?.service_type?.data?.id)
                     if(!serviceType) continue
 
                     // Only plans happening within 3 days
