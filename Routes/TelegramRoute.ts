@@ -7,6 +7,7 @@ import TelegramUserService from '../Services/TelegramUserService.js'
 
 import { GNBot, canReactOnMessage } from '../Other/TelegramBots.js'
 const { NODE_ENV, TELEGRAM_WEBHOOK_SECRET_TOKEN } = process.env
+
 // Type imports
 import type Hapi from '@hapi/hapi'
 import type TelegramBot from 'node-telegram-bot-api'
@@ -134,7 +135,7 @@ GNBot.onText(/\btimecodes\b/i, async (payload: TelegramBot.Message) => {
 00:00 - Молитва за дітей
 00:00 - Молитва за Україну / Потреби
 00:00 - Слово за пожертви
-00:00 - Відступ
+00:00 - Привітання тих, хто вперше
 00:00:00 - Проповідь / «Тема»
 00:00:00 - Оголошення`
 
@@ -155,6 +156,41 @@ GNBot.onText(/\btimecodes\b/i, async (payload: TelegramBot.Message) => {
     }
 })
 
+// Handles decline reason text after user pressed Ні ❌
+GNBot.on('message', async (payload: TelegramBot.Message) => {
+    try {
+        if (!payload.text || payload.text.startsWith('/')) return
+        if (payload.chat.type !== 'private') return
+        const chat = payload.chat
+        const userId = String(payload.from?.id ?? chat.id)
+        const telegramUser = await TelegramUserService.getOne({ userId })
+        const pending = telegramUser?.pendingDecline
+        if (!pending) return
+
+        const { planPersonId, planId, serviceTypeId, messageId } = pending
+
+        await PlanningCenterService.updatePlanPersonStatus(serviceTypeId, planId, planPersonId, 'D', payload.text)
+        await TelegramUserService.updateOne({ userId }, { $unset: { pendingDecline: 1 } })
+
+        const detailsLine = (pending.position && pending.date)
+            ? `\n${pending.serviceName ? pending.serviceName + ' ' : ''}${pending.date} на позиції ${pending.position}`
+            : ''
+
+        await TelegramService.sendMessage(chat.id, `Зрозуміло, відмінено ❌${detailsLine}\nПричина: ${payload.text}`, {
+            reply_markup: {
+                inline_keyboard: [[
+                    { text: 'Змінити', callback_data: `PCRSVP:CHANGE:${planPersonId}:${planId}:${serviceTypeId}` }
+                ]]
+            }
+        })
+    } catch (err) {
+        console.error('PCRSVP decline reason error', err)
+        if (payload.from?.id) {
+            await TelegramService.sendMessage(payload.from.id, 'Сталася помилка, спробуйте надіслати причину ще раз.').catch(() => {})
+        }
+    }
+})
+
 // Answering callback query
 GNBot.on('callback_query', async (payload) => {
     try{
@@ -169,11 +205,91 @@ GNBot.on('callback_query', async (payload) => {
 
         // RSVP response for Planning Center plan assignments
         if (messageText.startsWith('PCRSVP:')) {
-            const [, status, planPersonId, planId, serviceTypeId] = messageText.split(':') as [string, 'C' | 'D', string, string, string]
+            const [, status, planPersonId, planId, serviceTypeId] = messageText.split(':') as [string, 'C' | 'D' | 'CHANGE', string, string, string]
+
+            const getPlanDetails = async () => {
+                const [teamRes, planRes] = await Promise.all([
+                    PlanningCenterService.getPlanTeamMembers(serviceTypeId, planId),
+                    PlanningCenterService.getPlan(serviceTypeId, planId)
+                ])
+                const planPerson = (teamRes.data?.data ?? []).find((p: any) => p.id === planPersonId)
+                const plan = planRes.data?.data
+                const serviceType = (planRes.data?.included ?? []).find((i: any) => i.type === 'ServiceType')
+                if (!planPerson || !plan) return null
+                return {
+                    position: planPerson.attributes?.team_position_name ?? '—',
+                    date: moment(plan.attributes?.sort_date).format('DD.MM.YYYY'),
+                    serviceName: serviceType?.attributes?.name ?? ''
+                }
+            }
+
+            const formatDetailsLine = (d: { serviceName: string, date: string, position: string } | null) =>
+                d ? `\n${d.serviceName} ${d.date} на позиції ${d.position}` : ''
+
+            if (status === 'CHANGE') {
+                try {
+                    let originalText = 'Просимо підтвердити чи ти будеш на служінні:'
+                    const details = await getPlanDetails()
+                    if (details) {
+                        originalText = `${details.serviceName} ${details.date} на позиції ${details.position}. Просимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+                    }
+                    await TelegramService.editMessage(originalText, {
+                        chat_id: chat.id,
+                        message_id: messageId,
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: 'Так ✅', callback_data: `PCRSVP:C:${planPersonId}:${planId}:${serviceTypeId}` },
+                                { text: 'Ні ❌',  callback_data: `PCRSVP:D:${planPersonId}:${planId}:${serviceTypeId}` }
+                            ]]
+                        }
+                    })
+                } catch (err) {
+                    console.error('PCRSVP CHANGE error', err)
+                    await TelegramService.editMessage('Сталася помилка, спробуйте пізніше.', { chat_id: chat.id, message_id: messageId })
+                }
+                GNBot.answerCallbackQuery(payload.id)
+                return
+            }
+
+            if (status === 'D') {
+                const userId = String(payload.from?.id ?? chat.id)
+                try {
+                    const details = await getPlanDetails()
+                    await TelegramUserService.updateOne(
+                        { userId },
+                        { $set: { pendingDecline: {
+                            planPersonId, planId, serviceTypeId, messageId, createdAt: new Date(),
+                            ...(details ? { position: details.position, date: details.date, serviceName: details.serviceName } : {})
+                        }}},
+                        { upsert: true }
+                    )
+                    await TelegramService.editMessage('Будь ласка напишіть причину, і тоді ми відмінимо вашу позицію', {
+                        chat_id: chat.id,
+                        message_id: messageId
+                    })
+                } catch (err) {
+                    console.error('PCRSVP decline reason prompt error', err)
+                    await TelegramUserService.updateOne({ userId }, { $unset: { pendingDecline: 1 } })
+                    await TelegramService.editMessage('Сталася помилка, спробуйте пізніше.', { chat_id: chat.id, message_id: messageId })
+                }
+                GNBot.answerCallbackQuery(payload.id)
+                return
+            }
+
+            // status === 'C'
             try {
                 await PlanningCenterService.updatePlanPersonStatus(serviceTypeId, planId, planPersonId, status)
-                const replyText = status === 'C' ? 'Дякуємо! Підтверджено ✅' : 'Зрозуміло, відмічено ❌'
-                await TelegramService.editMessage(replyText, { chat_id: chat.id, message_id: messageId })
+                const details = await getPlanDetails()
+                const detailsLine = formatDetailsLine(details)
+                await TelegramService.editMessage(`Дякуємо! Підтверджено ✅${detailsLine}`, {
+                    chat_id: chat.id,
+                    message_id: messageId,
+                    reply_markup: {
+                        inline_keyboard: [[
+                            { text: 'Змінити', callback_data: `PCRSVP:CHANGE:${planPersonId}:${planId}:${serviceTypeId}` }
+                        ]]
+                    }
+                })
             } catch (err) {
                 console.error('PCRSVP update error', err)
                 await TelegramService.editMessage('Сталася помилка, спробуйте пізніше.', { chat_id: chat.id, message_id: messageId })

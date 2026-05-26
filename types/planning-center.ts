@@ -206,3 +206,27 @@ export type PlanPerson = {
     responds_to?: Relationship<"Person">;
   };
 }
+
+export type ServiceType = {
+  type: "ServiceType";
+  id: string;
+  attributes: {
+    name: string;
+    frequency?: string;
+    sequence?: number;
+    permissions?: string;
+    background_check_permissions?: string;
+    attachment_types_enabled?: boolean;
+    scheduled_publish?: boolean;
+    custom_item_types?: { matcher: string; color: string }[];
+    standard_item_types?: { item_type: string; color: string }[];
+    last_plan_from?: string;
+    created_at?: string;
+    updated_at?: string;
+    archived_at?: string | null;
+    deleted_at?: string | null;
+  };
+  relationships?: {
+    parent?: Relationship<"Folder">;
+  };
+}

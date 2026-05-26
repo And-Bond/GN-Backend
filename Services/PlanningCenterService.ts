@@ -1,12 +1,18 @@
 
 import axios from 'axios'
 // Type imports
-import type { Plan, Item, Team, People, PlanPerson } from 'types/planning-center.js'
+import type { Plan, Item, Team, People, PlanPerson, ServiceType } from 'types/planning-center.js'
 
 
 type defaultResponse<MainType, Included = never> = Promise<{
     data: {
         data: MainType[]
+    } & ([Included] extends [never] ? {} : { included: Included[] })
+}>
+
+type singleResponse<MainType, Included = never> = Promise<{
+    data: {
+        data: MainType
     } & ([Included] extends [never] ? {} : { included: Included[] })
 }>
 
@@ -89,15 +95,20 @@ const getArrangementsBySong = async (songId: string) => api.get(`songs/${songId}
 
 const getPlanTeamMembers = async (serviceTypeId: string, planId: string): defaultResponse<PlanPerson> => api.get(`/service_types/${serviceTypeId}/plans/${planId}/team_members?include=team`)
 
+const getPlan = async (serviceTypeId: string, planId: string): singleResponse<Plan, ServiceType> => api.get(`/service_types/${serviceTypeId}/plans/${planId}?include=service_type`)
+
 // https://api.planningcenteronline.com/docs/apps/services/versions/2018-11-01/vertices/plan_person
 const getPlanPeople = async (personId: string): defaultResponse<PlanPerson, Plan> => api.get(`/people/${personId}/plan_people?include=plan`)
 
-const updatePlanPersonStatus = async (serviceTypeId: string, planId: string, planPersonId: string, status: 'C' | 'D') =>
+const updatePlanPersonStatus = async (serviceTypeId: string, planId: string, planPersonId: string, status: 'C' | 'D', declineReason?: string) =>
     api.patch(`/service_types/${serviceTypeId}/plans/${planId}/team_members/${planPersonId}`, {
         data: {
             type: 'PlanPerson',
             id: planPersonId,
-            attributes: { status }
+            attributes: {
+                status,
+                ...(declineReason ? { decline_reason: declineReason } : {})
+            }
         }
     })
 
@@ -134,6 +145,7 @@ export default {
     getArrangementsBySong,
     getPlanPeople,
     getPlanTeamMembers,
+    getPlan,
     searchPersonByPhone,
     updatePlanPersonStatus
 }

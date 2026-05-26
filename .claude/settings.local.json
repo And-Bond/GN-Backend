@@ -6,7 +6,10 @@
       "Bash(Get-ChildItem -Path \"D:\\\\Projects\\\\GN-Backend\" -Force)",
       "Bash(Select-Object Name, FullName)",
       "Bash(ConvertTo-Json)",
-      "Bash(node -e \"const pkg = require\\('./node_modules/node-telegram-bot-api/package.json'\\); console.log\\(pkg.version\\)\")"
+      "Bash(node -e \"const pkg = require\\('./node_modules/node-telegram-bot-api/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(Get-ChildItem -Path \"D:\\\\Projects\\\\GN-Backend\" -Recurse -Filter \"*.ts\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npx tsc *)"
     ]
   }
 }

@@ -7,6 +7,17 @@ export interface ISentToPlan {
     sentAt: Date
 }
 
+export interface IPendingDecline {
+    planPersonId: string
+    planId: string
+    serviceTypeId: string
+    messageId: number
+    createdAt: Date
+    position?: string
+    date?: string
+    serviceName?: string
+}
+
 export interface ITelegramUser {
     _id: ObjectId;
     userId: string,
@@ -15,6 +26,7 @@ export interface ITelegramUser {
     active?: boolean,
     lastMessageAt?: Date
     sentToPlans?: ISentToPlan[]
+    pendingDecline?: IPendingDecline
 }
 
 const TelegramUser = new Schema<ITelegramUser>({
@@ -26,7 +38,17 @@ const TelegramUser = new Schema<ITelegramUser>({
     telegramPhone: String,
     active: Boolean,
     lastMessageAt: Date,
-    sentToPlans: [{ planId: String, sentAt: Date }]
+    sentToPlans: [{ planId: String, sentAt: Date }],
+    pendingDecline: {
+        planPersonId: String,
+        planId: String,
+        serviceTypeId: String,
+        messageId: Number,
+        createdAt: Date,
+        position: String,
+        date: String,
+        serviceName: String
+    }
 })
 
 
