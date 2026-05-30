@@ -21,6 +21,17 @@ console.log('\n-------------------CRON--------------------\n')
 console.log('            CRON Service Works!            ');
 console.log('\n-------------------CRON--------------------\n')
 
+const MEDIA_POSITION_CONFIG: Array<{ serviceName: string; displayName: string; emoji: string }> = [
+    { serviceName: 'Main Camera',       displayName: 'Основна',         emoji: '🎥' },
+    { serviceName: 'Keys Camera',       displayName: 'Клавіші',         emoji: '🎥' },
+    { serviceName: 'Drums Camera',      displayName: 'Барабани',        emoji: '🎥' },
+    { serviceName: 'Hall Camera',       displayName: 'Зал',             emoji: '🎥' },
+    { serviceName: 'Video Producer',    displayName: 'Реж',             emoji: '🎧' },
+    { serviceName: 'LED',               displayName: 'Лед',             emoji: '💻' },
+    { serviceName: 'All Service Photo', displayName: 'Фото Служіння',   emoji: '📸' },
+    { serviceName: 'Pastor Photo',      displayName: 'Фото Пастора',    emoji: '📸' },
+    { serviceName: 'Light',             displayName: 'Світло',          emoji: '💡' },
+]
 
 const check = async () => {
     try{
@@ -52,9 +63,6 @@ const check = async () => {
             }else {
                 const res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE,nextSundayPlan?.id)
                 const allSongs = res.data.data.filter(item => item?.attributes?.item_type === 'song')
-                if(!allSongs?.length){
-                    console.warn('Failed to send Sunday Service reminder, no songs at plan',nextSundayPlan?.attributes?.dates)
-                }
                 const template = handlebars.compile(SundayServiceTemplate)
 
 
@@ -62,8 +70,9 @@ const check = async () => {
                 // ! Hardcoded
                 const mediaTeam = orgTeams.data?.data?.find(team => team.attributes?.name === constants.PlanningCenterTeamNames.MEDIA)
                 
+                if(!mediaTeam) console.warn('[CronJob] Media team not found in Planning Center org teams')
                 const planPeople = await PlanningCenterService.getPlanTeamMembers(constants.PlanningCenterServiceIds.SUNDAY_SERVICE, nextSundayPlan?.id)
-                const allMediaTeamPeople = planPeople.data?.data?.filter(person => person.relationships?.team?.data?.id === mediaTeam?.id)
+                const allMediaTeamPeople = planPeople.data?.data?.filter(person => person.relationships?.team?.data?.id === mediaTeam?.id) ?? []
 
                 const songsMessage = template({
                     date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
@@ -74,15 +83,40 @@ const check = async () => {
                         }
                     }),
                 })
-                const mediaTeamMessage = template({
-                    date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
-                    mediaMembers: allMediaTeamPeople.map(member => {
+                const sortedMediaMembers = allMediaTeamPeople
+                    .map(member => {
+                        const positionName = member.attributes?.team_position_name ?? ''
+                        const configIndex = MEDIA_POSITION_CONFIG.findIndex(c => c.serviceName === positionName)
+                        const config = configIndex !== -1 ? MEDIA_POSITION_CONFIG[configIndex] : null
                         return {
-                            name: member.attributes?.name,
-                            position: member.attributes?.team_position_name
+                            name: member.attributes?.name ?? '',
+                            displayName: config?.displayName ?? positionName,
+                            emoji: config?.emoji ?? '•',
+                            order: configIndex !== -1 ? configIndex : 999,
                         }
                     })
-                })
+                    .sort((a, b) => a.order - b.order)
+
+                const grouped: Array<{ displayName: string; emoji: string; names: string[] }> = []
+                for (const member of sortedMediaMembers) {
+                    const existing = grouped.find(g => g.displayName === member.displayName)
+                    if (existing) {
+                        existing.names.push(member.name)
+                    } else {
+                        grouped.push({ displayName: member.displayName, emoji: member.emoji, names: [member.name] })
+                    }
+                }
+
+                const date = moment(nextSundayPlan.attributes.sort_date).format('DD.MM')
+                let mediaTeamMessage = `<b>${date} графік</b>`
+                let lastEmoji = ''
+                for (const group of grouped) {
+                    if (lastEmoji && group.emoji !== lastEmoji) {
+                        mediaTeamMessage += '\n'
+                    }
+                    mediaTeamMessage += `\n${group.emoji} ${group.displayName}: ${group.names.join(', ')}`
+                    lastEmoji = group.emoji
+                }
         
                 for(let schedule of sundayService){
                     try{
@@ -90,8 +124,12 @@ const check = async () => {
                         if(schedule.threadId){
                             options['message_thread_id'] = Number(schedule.threadId)
                         }
-                        await TelegramService.sendMessage(schedule.chatId!, songsMessage, options)
-                        await TelegramService.sendMessage(schedule.chatId!, mediaTeamMessage, options)
+                        if(allSongs?.length){
+                            await TelegramService.sendMessage(schedule.chatId!, songsMessage, options)
+                        }
+                        if(allMediaTeamPeople?.length){
+                            await TelegramService.sendMessage(schedule.chatId!, mediaTeamMessage, options)
+                        }
                         // Hard code every thursday
                         const nextTimeSchedule = moment().utc().startOf('hour').isoWeekday(4).set({hour: 15, minute: 0})
                         if(moment().utc().isAfter(nextTimeSchedule)){

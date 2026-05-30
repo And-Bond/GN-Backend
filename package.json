@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && copyfiles -u 1 \"Templates/**/*.html\" dist/Templates",
     "start": "concurrently -k \"tsc --watch\" \"copyfiles -u 1 \\\"Templates/**/*.html\\\" dist/Templates && nodemon -r dotenv/config dist/server.js\"",
-    "debug": "concurrently -k \"tsc --watch\" \"copyfiles -u 1 \\\"Templates/**/*.html\\\" dist/Templates && nodemon --inspect=9229 -r dotenv/config dist/server.js\"",
+    "local": "concurrently -k \"tsc --watch\" \"copyfiles -u 1 \\\"Templates/**/*.html\\\" dist/Templates && nodemon --inspect=9229 -r dotenv/config dist/server.js\"",
     "prod": "pm2-runtime start --node-args \"-r dotenv/config\" dist/server.js --name gn-backend"
   },
   "keywords": [],
