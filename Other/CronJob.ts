@@ -26,7 +26,7 @@ const MEDIA_POSITION_CONFIG: Array<{ serviceName: string; displayName: string; e
     { serviceName: 'Keys Camera',       displayName: 'Клавіші',         emoji: '🎥' },
     { serviceName: 'Drums Camera',      displayName: 'Барабани',        emoji: '🎥' },
     { serviceName: 'Hall Camera',       displayName: 'Зал',             emoji: '🎥' },
-    { serviceName: 'Video Producer',    displayName: 'Реж',             emoji: '🎧' },
+    { serviceName: 'Video Director',    displayName: 'Режисер',         emoji: '🎧' },
     { serviceName: 'LED',               displayName: 'Лед',             emoji: '💻' },
     { serviceName: 'All Service Photo', displayName: 'Фото Служіння',   emoji: '📸' },
     { serviceName: 'Pastor Photo',      displayName: 'Фото Пастора',    emoji: '📸' },
@@ -72,7 +72,10 @@ const check = async () => {
                 
                 if(!mediaTeam) console.warn('[CronJob] Media team not found in Planning Center org teams')
                 const planPeople = await PlanningCenterService.getPlanTeamMembers(constants.PlanningCenterServiceIds.SUNDAY_SERVICE, nextSundayPlan?.id)
-                const allMediaTeamPeople = planPeople.data?.data?.filter(person => person.relationships?.team?.data?.id === mediaTeam?.id) ?? []
+                const allMediaTeamPeople = planPeople.data?.data?.filter(person =>
+                    person.relationships?.team?.data?.id === mediaTeam?.id &&
+                    person.attributes?.status !== 'D'
+                ) ?? []
 
                 const songsMessage = template({
                     date: moment(nextSundayPlan.attributes.sort_date).format('DD/MM'),
