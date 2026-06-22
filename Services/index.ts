@@ -6,6 +6,7 @@ import ScheduleEventsService from './ScheduleEventsService.js';
 import PlanningCenterService from './PlanningCenterService.js';
 import AuthTokenService from './AuthTokenService.js';
 import ProPresenterService from './ProPresenterService.js';
+import DbVersionService from './DbVersionService.js';
 
 const Services = {
   AccountService,
@@ -15,7 +16,8 @@ const Services = {
   ScheduleEventsService,
   PlanningCenterService,
   AuthTokenService,
-  ProPresenterService
+  ProPresenterService,
+  DbVersionService
 };
 
 export default Services;

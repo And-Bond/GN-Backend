@@ -98,6 +98,23 @@ GNBot.onText(/\/reminder/, async (payload: TelegramBot.Message) => {
     }
 })
 
+// /unsubscribe_commands — remove all scheduled reminders for this chat
+GNBot.onText(/\/unsubscribe_commands/, async (payload: TelegramBot.Message) => {
+    try {
+        const chat = payload.chat
+        const threadId = payload.message_thread_id
+        const result = await ScheduleEventsService.deleteMany({ chatId: String(chat.id) })
+        const message = result.deletedCount > 0
+            ? `Скасовано ${result.deletedCount} нагадування(-ь) ✅`
+            : 'Активних нагадувань не знайдено'
+        await TelegramService.sendMessage(chat.id, message, {
+            ...(threadId ? { message_thread_id: threadId } : {})
+        })
+    } catch (err) {
+        console.error('ERROR /unsubscribe_commands HANDLER', err)
+    }
+})
+
 // Get timecodes template codes
 GNBot.onText(/\btimecodes\b/i, async (payload: TelegramBot.Message) => {
     try {
