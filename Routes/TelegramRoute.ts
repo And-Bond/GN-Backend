@@ -1,9 +1,13 @@
 import moment from 'moment'
+import fs from 'fs'
+import path from 'path'
 import constants from '../Other/constants.js'
 import ScheduleEventsService from '../Services/ScheduleEventsService.js'
 import TelegramService from '../Services/TelegramService.js'
 import PlanningCenterService from '../Services/PlanningCenterService.js'
 import TelegramUserService from '../Services/TelegramUserService.js'
+
+const SONGS_PATH = path.resolve(process.cwd(), 'songs.json')
 
 import { GNBot, canReactOnMessage } from '../Other/TelegramBots.js'
 const { NODE_ENV, TELEGRAM_WEBHOOK_SECRET_TOKEN } = process.env
@@ -115,11 +119,49 @@ GNBot.onText(/\/unsubscribe_commands/, async (payload: TelegramBot.Message) => {
     }
 })
 
+// /add-ua-song-name <English name> | <Ukrainian name>
+// Restricted to whitelisted Telegram user IDs defined in constants.TgAdminUserIds
+GNBot.onText(/\/add-ua-song-name (.+)/, async (payload: TelegramBot.Message, match) => {
+    try {
+        const chat = payload.chat
+        const parts = (match?.[1] ?? '').split('|').map(s => s.trim())
+        if (parts.length < 2 || !parts[0] || !parts[1]) {
+            await TelegramService.sendMessage(chat.id, 'Використання: /add-ua-song-name Англійська назва | Українська назва')
+            return
+        }
+        const [enName, uaName] = parts
+
+        const songs: { id: string, title: string, alternate_title: string }[] = JSON.parse(fs.readFileSync(SONGS_PATH, 'utf-8').replace(/^﻿/, ''))
+        const song = songs.find(s => s.title.trim().toLowerCase() === enName.toLowerCase())
+
+        if (!song) {
+            await TelegramService.sendMessage(chat.id, `❌ Пісня "${enName}" не знайдена в songs.json`)
+            return
+        }
+
+        song.alternate_title = uaName
+        fs.writeFileSync(SONGS_PATH, JSON.stringify(songs, null, 2), 'utf-8')
+
+        await TelegramService.sendMessage(chat.id, `✅ "${enName}" → "${uaName}"`)
+    } catch (err) {
+        console.error('ERROR /add-ua-song-name HANDLER', err)
+    }
+})
+
 // Get timecodes template codes
-GNBot.onText(/\btimecodes\b/i, async (payload: TelegramBot.Message) => {
+// Usage:
+//   timecodes              — most recent past plan
+//   timecodes -1           — one plan before that, -2 two before, etc.
+//   timecodes 15/06/2025   — plan on that specific date (dd/mm/yyyy)
+GNBot.onText(/\btimecodes(?:\s+(.+))?/i, async (payload: TelegramBot.Message, match) => {
     try {
         const chat = payload.chat
         const threadId = payload.message_thread_id
+        const param = match?.[1]?.trim() ?? ''
+
+        const dateMatch  = param.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+        const offsetMatch = param.match(/^(-\d+)$/)
+        const offset = offsetMatch ? Math.abs(parseInt(offsetMatch[1])) : 0
 
         // Base message before songs add
         let message = `
@@ -127,24 +169,42 @@ GNBot.onText(/\btimecodes\b/i, async (payload: TelegramBot.Message) => {
 00:00 - Інтро
 00:00 - Вступ`;
 
-        // Will recive recent created plan with future ones and past(if not created more than 10 plans in future)
+        const perPage = dateMatch ? 30 : Math.max(15, offset + 5)
         const recentPlans = await PlanningCenterService.getPlansList(constants.PlanningCenterServiceIds.SUNDAY_SERVICE, {
             order: '-sort_date',
-            per_page: 10
+            per_page: perPage
         });
 
-        // Last plan from now
-        const previousPlan = recentPlans.data?.data
+        const pastPlans = recentPlans.data?.data
             ?.filter(p => moment(p.attributes?.sort_date).isBefore(moment()))
-            .sort((a, b) => moment(b.attributes?.sort_date).diff(moment(a.attributes?.sort_date)))[0];
+            .sort((a, b) => moment(b.attributes?.sort_date).diff(moment(a.attributes?.sort_date))) ?? []
+
+        let previousPlan
+        if (dateMatch) {
+            const target = moment(`${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`, 'YYYY-MM-DD')
+            previousPlan = pastPlans.find(p => moment(p.attributes?.sort_date).isSame(target, 'day'))
+            if (!previousPlan) {
+                await TelegramService.sendMessage(chat.id, `Вибач, не знайшов план на ${param}(`, { ...(threadId ? { message_thread_id: threadId } : {}) })
+                return
+            }
+        } else {
+            previousPlan = pastPlans[offset]
+        }
 
         if(previousPlan){
         // Getting all songs of last plan
         const res = await PlanningCenterService.getPlanItems(constants.PlanningCenterServiceIds.SUNDAY_SERVICE, previousPlan?.id)
         const allSongs = res.data.data.filter(item => item?.attributes?.item_type === 'song')
-        // Songs adding part
+
+        const raw = fs.readFileSync(SONGS_PATH, 'utf-8').replace(/^﻿/, '')
+        const songsJson: { id: string, title: string, alternate_title: string }[] = JSON.parse(raw)
+        const uaById = new Map(songsJson.map(s => [s.id, s.alternate_title?.trim()]))
+
         for(let song of allSongs){
-            message += `\n00:00 - НАЗВА (${song?.attributes?.title})`
+            const enTitle = song?.attributes?.title ?? ''
+            const songId = song?.relationships?.song?.data?.id
+            const uaTitle = (songId && uaById.get(songId)) || 'НАЗВА'
+            message += `\n00:00 - ${uaTitle} (${enTitle})`
         }
 
         // After songs
