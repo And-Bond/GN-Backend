@@ -189,7 +189,8 @@ const check = async () => {
                     const serviceTypeId = planPerson.relationships?.service_type?.data?.id
                     const position = planPerson.attributes?.team_position_name ?? '—'
                     const date = moment(plan.attributes?.sort_date).format('DD.MM.YYYY')
-                    const text = `Привіт, нагадуємо що ти служиш: \n    \n${serviceType?.attributes?.name?.trim()} ${date} на позиції ${position}. \n\nПросимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+                    const statusLabel = 'Не підтвердив статус ⏳'
+                    const text = `Привіт, нагадуємо що ти служиш: \n    \n${serviceType?.attributes?.name?.trim()} ${date} на позиції ${position}.\nЗараз ти: ${statusLabel}\n\nПросимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
 
                     await TelegramService.sendMessage(Number(user.userId), text, {
                         reply_markup: {

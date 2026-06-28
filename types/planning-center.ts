@@ -193,7 +193,7 @@ export type PlanPerson = {
     prepare_notification?: boolean;
     scheduled_by_is_eligible_for_responds_to?: boolean;
     scheduled_by_name?: string;
-    status?: string;
+    status?: 'U' | 'C' | 'D';
     status_updated_at?: string;
     team_position_name?: string;
   };

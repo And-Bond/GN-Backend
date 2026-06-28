@@ -296,19 +296,27 @@ GNBot.on('callback_query', async (payload) => {
                 return {
                     position: planPerson.attributes?.team_position_name ?? '—',
                     date: moment(plan.attributes?.sort_date).format('DD.MM.YYYY'),
-                    serviceName: serviceType?.attributes?.name ?? ''
+                    serviceName: serviceType?.attributes?.name ?? '',
+                    status: planPerson.attributes?.status ?? 'U',
+                    declineReason: planPerson.attributes?.decline_reason ?? ''
                 }
             }
 
             const formatDetailsLine = (d: { serviceName: string, date: string, position: string } | null) =>
                 d ? `\n${d.serviceName} ${d.date} на позиції ${d.position}` : ''
 
+            const formatStatus = (s: string, declineReason?: string) => {
+                if (s === 'C') return 'Підтвердив, що служиш ✅'
+                if (s === 'D') return `Не зміг послужити ❌${declineReason ? `, по причині - ${declineReason}` : ''}`
+                return 'Не підтвердив статус ⏳'
+            }
+
             if (status === 'CHANGE') {
                 try {
                     let originalText = 'Просимо підтвердити чи ти будеш на служінні:'
                     const details = await getPlanDetails()
                     if (details) {
-                        originalText = `${details.serviceName} ${details.date} на позиції ${details.position}. Просимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+                        originalText = `${details.serviceName} ${details.date} на позиції ${details.position}.\nЗараз ти: ${formatStatus(details.status, details.declineReason)}\n\nПросимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
                     }
                     await TelegramService.editMessage(originalText, {
                         chat_id: chat.id,
