@@ -148,6 +148,30 @@ GNBot.onText(/\/add-ua-song-name (.+)/, async (payload: TelegramBot.Message, mat
     }
 })
 
+// /leave_feedback <text> — forwards feedback to the static admin Telegram ID
+GNBot.onText(/\/leave_feedback (.+)/, async (payload: TelegramBot.Message, match) => {
+    try {
+        const chat = payload.chat
+        const from = payload.from
+        const text = match?.[1]?.trim()
+
+        if (!text) {
+            await TelegramService.sendMessage(chat.id, 'Використання: /leave_feedback Твій текст')
+            return
+        }
+
+        const senderName = [from?.first_name, from?.last_name].filter(Boolean).join(' ') || 'Невідомий'
+        const senderUsername = from?.username ? ` (@${from.username})` : ''
+        const senderId = from?.id ?? chat.id
+
+        const forwardText = `📩 Новий фідбек\nВід: ${senderName}${senderUsername} [${senderId}]\n\n${text}`
+        await TelegramService.sendMessage(Number(constants.FeedbackRecipientId), forwardText)
+        await TelegramService.sendMessage(chat.id, 'Дякую, твій фідбек надіслано ✅')
+    } catch (err) {
+        console.error('ERROR /leave_feedback HANDLER', err)
+    }
+})
+
 // Get timecodes template codes
 // Usage:
 //   timecodes              — most recent past plan

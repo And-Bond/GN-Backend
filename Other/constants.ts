@@ -33,5 +33,6 @@ export default {
     TgPhoneUsersDev: [
         "380663309198", // Alex Havrysh
     ],
-    BotName: BotName
+    BotName: BotName,
+    FeedbackRecipientId: '1688733747'
 }
