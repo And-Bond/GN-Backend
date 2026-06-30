@@ -26,6 +26,7 @@ export interface ITelegramUser {
     active?: boolean,
     lastMessageAt?: Date
     sentToPlans?: ISentToPlan[]
+    sentConfirmReminders?: ISentToPlan[]
     pendingDecline?: IPendingDecline
 }
 
@@ -39,6 +40,7 @@ const TelegramUser = new Schema<ITelegramUser>({
     active: Boolean,
     lastMessageAt: Date,
     sentToPlans: [{ planId: String, sentAt: Date }],
+    sentConfirmReminders: [{ planId: String, sentAt: Date }],
     pendingDecline: {
         planPersonId: String,
         planId: String,

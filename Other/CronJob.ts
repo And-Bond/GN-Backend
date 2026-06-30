@@ -155,7 +155,7 @@ const check = async () => {
                 }
             }
         }
-        // Send RSVP notifications for upcoming plans
+        // Send RSVP notifications and 1-day-before reminders
         const usersWithPCId = await TelegramUserService.getMany({ planningCenterId: { $exists: true, $ne: null } })
         const organizationServiceTypes = await PlanningCenterService.getServiceTypes()
         for (const user of usersWithPCId) {
@@ -165,46 +165,57 @@ const check = async () => {
                 const includedPlans = res.data?.included ?? []
 
                 for (const planPerson of planPersons) {
-                    // Only send if user not confirmed it yet
-                    if(planPerson?.attributes?.status !== 'U') continue
-
+                    const status = planPerson?.attributes?.status
                     const planId = planPerson.relationships?.plan?.data?.id
                     if (!planId) continue
 
-                    const plan = includedPlans.find(p => p.id === planId)
+                    const plan = includedPlans.find((p: any) => p.id === planId)
                     if (!plan) continue
 
+                    const planDate = moment(plan.attributes?.sort_date)
+                    if (planDate.isBefore(moment())) continue
+
                     const serviceType = organizationServiceTypes.data?.data?.find((s: any) => s.id === plan?.relationships?.service_type?.data?.id)
-                    if(!serviceType) continue
-
-                    // Only plans happening within 3 days
-                    if (moment(plan.attributes?.sort_date).isAfter(moment().add(3, 'days'))) continue
-
-                    // Skip past plans
-                    if (moment(plan.attributes?.sort_date).isBefore(moment())) continue
-
-                    // Skip if already notified
-                    if (user.sentToPlans?.some(s => s.planId === planId)) continue
-
-                    const serviceTypeId = planPerson.relationships?.service_type?.data?.id
                     const position = planPerson.attributes?.team_position_name ?? '—'
-                    const date = moment(plan.attributes?.sort_date).format('DD.MM.YYYY')
-                    const statusLabel = 'Не підтвердив статус ⏳'
-                    const text = `Привіт, нагадуємо що ти служиш: \n    \n${serviceType?.attributes?.name?.trim()} ${date} на позиції ${position}.\nЗараз ти: ${statusLabel}\n\nПросимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+                    const date = planDate.format('DD.MM.YYYY')
+                    const serviceTypeName = serviceType?.attributes?.name?.trim() ?? ''
 
-                    await TelegramService.sendMessage(Number(user.userId), text, {
-                        reply_markup: {
-                            inline_keyboard: [[
-                                { text: 'Так ✅', callback_data: `PCRSVP:C:${planPerson.id}:${planId}:${serviceTypeId}` },
-                                { text: 'Ні ❌',  callback_data: `PCRSVP:D:${planPerson.id}:${planId}:${serviceTypeId}` }
-                            ]]
+                    // RSVP notification for unconfirmed users (within 3 days)
+                    if (status === 'U' && serviceType && planDate.isBefore(moment().add(3, 'days'))) {
+                        if (!user.sentToPlans?.some(s => s.planId === planId)) {
+                            const serviceTypeId = planPerson.relationships?.service_type?.data?.id
+                            const statusLabel = 'Не підтвердив статус ⏳'
+                            const text = `Привіт, нагадуємо що ти служиш: \n    \n${serviceTypeName} ${date} на позиції ${position}.\nЗараз ти: ${statusLabel}\n\nПросимо підтвердити чи ти точно будеш натискаючи кнопки снизу.`
+
+                            await TelegramService.sendMessage(Number(user.userId), text, {
+                                reply_markup: {
+                                    inline_keyboard: [[
+                                        { text: 'Так ✅', callback_data: `PCRSVP:C:${planPerson.id}:${planId}:${serviceTypeId}` },
+                                        { text: 'Ні ❌',  callback_data: `PCRSVP:D:${planPerson.id}:${planId}:${serviceTypeId}` }
+                                    ]]
+                                }
+                            })
+
+                            await TelegramUserService.updateOne(
+                                { _id: user._id },
+                                { $push: { sentToPlans: { planId, sentAt: new Date() } } }
+                            )
                         }
-                    })
+                    }
 
-                    await TelegramUserService.updateOne(
-                        { _id: user._id },
-                        { $push: { sentToPlans: { planId, sentAt: new Date() } } }
-                    )
+                    // 1-day-before reminder for confirmed users
+                    if (status === 'C' && planDate.isBefore(moment().add(25, 'hours'))) {
+                        if (!user.sentConfirmReminders?.some(s => s.planId === planId)) {
+                            const text = `Нагадуємо, що завтра ти служиш на позиції ${position}.\n\nБудь готовий ✅`
+
+                            await TelegramService.sendMessage(Number(user.userId), text)
+
+                            await TelegramUserService.updateOne(
+                                { _id: user._id },
+                                { $push: { sentConfirmReminders: { planId, sentAt: new Date() } } }
+                            )
+                        }
+                    }
                 }
             } catch (err: any) {
                 console.error(`[PC sync] failed for user ${user.userId}:`, err?.message)
